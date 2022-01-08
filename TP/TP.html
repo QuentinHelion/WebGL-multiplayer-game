@@ -58,67 +58,25 @@
 				pointLight.castShadow = true; // renvoie des ombres
 				scene.add(pointLight);
 
-				// ===== SPOT LIGHT =====
-				const spotLight = new THREE.SpotLight( 0xFFFFFF, 12); // (couleur, intensite)
-				spotLight.position.set( 0, 300, 0 ); // position
-				spotLight.angle = Math.PI / 6; // angle d'ouverture
-				spotLight.decay = 1.5; // diminution avec la distance
-				spotLight.distance = 300; // distance
-				spotLight.castShadow = true; // renvoie une ombres
-				scene.add( spotLight );
-
-				// ===== HELPER =====
-				spotLightHelper = new THREE.SpotLightHelper( spotLight ); // ajoute des helpers pour le spotLight
-				spotLightHelper.visible = false; // pas visible
-				scene.add( spotLightHelper ); // ajout des helpers à la scene (blanc)
-
-				shadowCameraHelper = new THREE.CameraHelper( spotLight.shadow.camera ); // ajoute des helpers pour la camera d'ombres
-				shadowCameraHelper.visible = false; // pas visible
-				scene.add( shadowCameraHelper ); // ajout des helpers à la scene (orange)
-
-
-
-				// ============== TEXTURES ==============
-				// ===== LOADERS =====
-				const loader = new THREE.TextureLoader();
-				loader.setPath( 'textures/' ); // emplacement des textures
-				// ===== MARCHES =====
-				const marcheT = [ // texture par face
-					new THREE.MeshPhongMaterial({map: loader.load('dallePierreCoter.jpg')}), //MeshPhongMaterial = mesh mat
-					new THREE.MeshPhongMaterial({map: loader.load('dallePierreCoter.jpg')}),
-					new THREE.MeshPhongMaterial({map: loader.load('dallePierre.jpg')}),
-					new THREE.MeshPhongMaterial({map: loader.load('dallePierre.jpg')}),
-					new THREE.MeshPhongMaterial({map: loader.load('dallePierreCoter.jpg')}),
-					new THREE.MeshPhongMaterial({map: loader.load('dallePierreCoter.jpg')})
-				];
-
-				// ===== CONE LUMIERE =====
-				const coneT = new THREE.MeshBasicMaterial({	color: 0xFFFFFF, opacity: 0.1, transparent: true, side: THREE.DoubleSide});
-
-				// ============== OBJECTS ==============
-				// ===== MARCHES =====
-				const marcheA = new THREE.BoxGeometry( 200, 20, 200 ); // dimensions
-				const marcheB = new THREE.BoxGeometry( 150, 20, 150 );
-				const mA = new THREE.Mesh( marcheA, marcheT ); // (dimensions, texture)
-				const mB = new THREE.Mesh( marcheB, marcheT );
-				mA.position.y = 10; // position
-				mB.position.y = 30; // hauteur mA + 10
-				mA.receiveShadow = true; // reçoi les ombres
-				mB.receiveShadow = true;
-				scene.add( mA ); // ajout
-				scene.add( mB );
-
-				// ===== CONE =====
-				const coneGeo = new THREE.ConeGeometry( 110, 400, 60 ); // dimension (radius, hauteur, segments)
-				const cone = new THREE.Mesh(coneGeo, coneT); // (dimensions, texture)
-				cone.position.set( 0, 200, 0 ); // position
-				scene.add(cone);
 
 				// ============== IMPORT OBJETS ==============
 				// ============== LOADERS =============
 				const loaderMTL = new MTLLoader(); // mtl => fichier qui contient les textures d'un objet 3d
 				loaderMTL.setPath( 'models/' ); // emplacement des fichiers
 				loaderMTL.setMaterialOptions( { side: THREE.DoubleSide } ); // texture appliquer des 2 cotés de l'objet
+
+				// ===== CAVE =====
+				loaderMTL.load('labyCave.mtl', (mtl) => { // new texture d'obj
+					const caveOBJ = new OBJLoader(); // new obj
+					caveOBJ.setMaterials(mtl); // ajout les texture a l'obj
+					caveOBJ.load('models/labyCave.obj', (obj) => { // charge l'objet
+						obj.position.set(0,60,0); // x, z, y
+						obj.scale.multiplyScalar(100);
+						scene.add(obj); // ajout de l'obj à la scène
+					});
+				});
+
+
 
 
 				// ============= CAMERA =============
@@ -139,8 +97,26 @@
 			}
 
 
-
 			// ============== FONCTIONS UTILES ==============
+			// ===== CREATION PERSONNAGE =====
+			function createPerso(){
+				const angle = [0,90,180,-90];
+				const loaderFBX = new FBXLoader();
+				loaderFBX.setPath( 'models/' ); // emplacement des fichiers
+				loaderFBX.load( 'champi.fbx', function ( obj ) {
+					obj.traverse( function ( child ) {
+						if ( child.isMesh ) {
+							child.castShadow = true;
+							child.receiveShadow = true;
+						}
+					} );
+					obj.position.set(genPos(areaMax, areaMin), 300, genPos(areaMax, areaMin));
+					obj.rotation.y = angle[parseInt(Math.floor(Math.random() * 4))];
+					objArray.push(obj);
+					scene.add( obj );
+				});
+			}
+
 			// ===== WINDOW REZISE =====
 			function onWindowResize() {
 				camera.aspect = window.innerWidth / window.innerHeight;
