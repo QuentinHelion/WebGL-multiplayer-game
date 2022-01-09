@@ -23,6 +23,21 @@
 			let camera, scene, renderer;
 			let pointLight, spotLightHelper;
 
+			// ============== TABLEAUX ===============
+			const keyStates = {};
+
+			// ============== PARAMETRES ===============
+			const STEPS_PER_FRAME = 30;
+
+			// =============== EVENT LISTENER ===============
+			document.addEventListener( 'keydown', ( event ) => {
+				keyStates[ event.code ] = true;
+			} );
+
+			document.addEventListener( 'keyup', ( event ) => {
+				keyStates[ event.code ] = false;
+			} );
+
 
 			// ============== APPEL FONCTIONS ==============
 			init();
@@ -76,6 +91,8 @@
 					});
 				});
 
+				createPerso();
+
 
 
 
@@ -110,9 +127,9 @@
 							child.receiveShadow = true;
 						}
 					} );
-					obj.position.set(genPos(areaMax, areaMin), 300, genPos(areaMax, areaMin));
-					obj.rotation.y = angle[parseInt(Math.floor(Math.random() * 4))];
-					objArray.push(obj);
+					// obj.position.set(genPos(areaMax, areaMin), 300, genPos(areaMax, areaMin));
+					// obj.rotation.y = angle[parseInt(Math.floor(Math.random() * 4))];
+					// objArray.push(obj);
 					scene.add( obj );
 				});
 			}
@@ -169,6 +186,34 @@
 			}
 
 
+			function controls( deltaTime ) {
+
+				// gives a bit of air control
+				const speedDelta = deltaTime * ( playerOnFloor ? 25 : 8 );
+				const deltaTime = Math.min( 0.05, clock.getDelta() ) / STEPS_PER_FRAME;
+
+				if ( keyStates[ 'KeyW' ] ) {
+					playerVelocity.add( getForwardVector().multiplyScalar( speedDelta ) );
+				}
+
+				if ( keyStates[ 'KeyS' ] ) {
+					playerVelocity.add( getForwardVector().multiplyScalar( - speedDelta ) );
+				}
+
+				if ( keyStates[ 'KeyA' ] ) {
+					playerVelocity.add( getSideVector().multiplyScalar( - speedDelta ) );
+				}
+
+				if ( keyStates[ 'KeyD' ] ) {
+					playerVelocity.add( getSideVector().multiplyScalar( speedDelta ) );
+				}
+
+				if ( playerOnFloor ) {
+					if ( keyStates[ 'Space' ] ) {
+						playerVelocity.y = 15;
+					}
+				}
+			}
 
 
 			function animate() {
@@ -176,6 +221,15 @@
 				window.requestAnimationFrame( animate ); // recup fps
 				stats.update();
 
+
+				for ( let i = 0; i < STEPS_PER_FRAME; i ++ ) {
+
+					controls( deltaTime );
+					updatePlayer( deltaTime );
+					updateSpheres( deltaTime );
+					teleportPlayerIfOob();
+
+				}
 
 
 
