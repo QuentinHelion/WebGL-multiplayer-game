@@ -17,17 +17,30 @@
 			import {OBJLoader} from './jsm/loaders/OBJLoader.js'; // ajout d'obj
 			import {MTLLoader} from './jsm/loaders/MTLLoader.js'; // ² obj .mtl (pour texture)
 			import { FBXLoader } from './jsm/loaders/FBXLoader.js'; // FBX looader
+			import { Capsule } from './jsm/math/Capsule.js';
+			import { Octree } from './jsm/math/Octree.js';
 
 			// ============== VARIABLES ===============
 			let stats,gui,controls;
 			let camera, scene, renderer;
 			let pointLight, spotLightHelper;
+			const playerVelocity = new THREE.Vector3();
+			const playerDirection = new THREE.Vector3();
+			const playerCollider = new Capsule( new THREE.Vector3( 0, 0.35, 0 ), new THREE.Vector3( 0, 1, 0 ), 0.35 );
+			const clock = new THREE.Clock();
+			let objCampi;
+			const worldOctree = new Octree();
 
 			// ============== TABLEAUX ===============
 			const keyStates = {};
 
 			// ============== PARAMETRES ===============
 			const STEPS_PER_FRAME = 30;
+
+			// ============== APPEL FONCTIONS ==============
+			init();
+			buildGui();
+			animate();
 
 			// =============== EVENT LISTENER ===============
 			document.addEventListener( 'keydown', ( event ) => {
@@ -39,10 +52,6 @@
 			} );
 
 
-			// ============== APPEL FONCTIONS ==============
-			init();
-			buildGui();
-			animate();
 
 			// ============== FONCTIONS ==============
 			function init() {
@@ -91,9 +100,12 @@
 					});
 				});
 
-				createPerso();
+				// createPerso();
 
-
+				const geometry = new THREE.BoxGeometry( 200, 200, 200 );
+				const material = new THREE.MeshBasicMaterial( { color: 0xFFFFFF } );
+				objCampi = new THREE.Mesh( geometry, material );
+				scene.add( objCampi );
 
 
 				// ============= CAMERA =============
@@ -114,6 +126,7 @@
 			}
 
 
+
 			// ============== FONCTIONS UTILES ==============
 			// ===== CREATION PERSONNAGE =====
 			function createPerso(){
@@ -127,11 +140,11 @@
 							child.receiveShadow = true;
 						}
 					} );
-					// obj.position.set(genPos(areaMax, areaMin), 300, genPos(areaMax, areaMin));
-					// obj.rotation.y = angle[parseInt(Math.floor(Math.random() * 4))];
-					// objArray.push(obj);
+					// obj.getWorldDirection( playerDirection );
 					scene.add( obj );
+					objCampi = obj;
 				});
+				console.log('createPerso end');
 			}
 
 			// ===== WINDOW REZISE =====
@@ -185,13 +198,10 @@
 				gui.open(); // Ajout du gui à la scene
 			}
 
-
-			function controls( deltaTime ) {
-
+			function control( deltaTime ) {
 				// gives a bit of air control
-				const speedDelta = deltaTime * ( playerOnFloor ? 25 : 8 );
-				const deltaTime = Math.min( 0.05, clock.getDelta() ) / STEPS_PER_FRAME;
-
+				 // * ( playerOnFloor ? 25 : 8 );
+				const speedDelta = deltaTime;
 				if ( keyStates[ 'KeyW' ] ) {
 					playerVelocity.add( getForwardVector().multiplyScalar( speedDelta ) );
 				}
@@ -208,27 +218,80 @@
 					playerVelocity.add( getSideVector().multiplyScalar( speedDelta ) );
 				}
 
-				if ( playerOnFloor ) {
-					if ( keyStates[ 'Space' ] ) {
-						playerVelocity.y = 15;
-					}
-				}
+				// if ( playerOnFloor ) {
+				// 	if ( keyStates[ 'Space' ] ) {
+				// 		playerVelocity.y = 15;
+				// 	}
+				// }
 			}
 
+			function getForwardVector() {
+				objCampi.getWorldDirection( playerDirection );
+				playerDirection.y = 0;
+				playerDirection.normalize();
+
+				return playerDirection;
+			}
+
+			function getSideVector() {
+				objCampi.getWorldDirection( playerDirection );
+				playerDirection.y = 0;
+				playerDirection.normalize();
+				playerDirection.cross( objCampi.up );
+
+				return playerDirection;
+			}
+
+			function playerCollisions() {
+				const result = worldOctree.capsuleIntersect( playerCollider );
+				// playerOnFloor = false;
+				if ( result ) {
+					// playerOnFloor = result.normal.y > 0;
+					// if ( ! playerOnFloor ) {
+					// 	playerVelocity.addScaledVector( result.normal, - result.normal.dot( playerVelocity ) );
+					// }
+					playerCollider.translate( result.normal.multiplyScalar( result.depth ) );
+				}
+
+			}
+
+			function updatePlayer( deltaTime ) {
+
+				let damping = Math.exp( - 4 * deltaTime ) - 1;
+
+				// if ( ! playerOnFloor ) {
+
+					// playerVelocity.y -= GRAVITY * deltaTime;
+					//
+					// // small air resistance
+					// damping *= 0.1;
+
+				// }
+
+				playerVelocity.addScaledVector( playerVelocity, damping );
+
+				const deltaPosition = playerVelocity.clone().multiplyScalar( deltaTime );
+				playerCollider.translate( deltaPosition );
+
+				playerCollisions();
+
+				objCampi.position.copy( playerCollider.end );
+
+			}
 
 			function animate() {
 
+				const deltaTime = Math.min( 0.05, clock.getDelta() ) / STEPS_PER_FRAME;
 				window.requestAnimationFrame( animate ); // recup fps
 				stats.update();
 
 
 				for ( let i = 0; i < STEPS_PER_FRAME; i ++ ) {
-
-					controls( deltaTime );
+					control( deltaTime );
 					updatePlayer( deltaTime );
-					updateSpheres( deltaTime );
-					teleportPlayerIfOob();
-
+				// 	updateSpheres( deltaTime );
+				// 	teleportPlayerIfOob();
+				//
 				}
 
 
