@@ -95,22 +95,22 @@
 				loaderMTL.setMaterialOptions( { side: THREE.DoubleSide } ); // texture appliquer des 2 cotés de l'objet
 
 				// ===== CAVE =====
-				loaderMTL.load('labyCave.mtl', (mtl) => { // new texture d'obj
-					const caveOBJ = new OBJLoader(); // new obj
-					caveOBJ.setMaterials(mtl); // ajout les texture a l'obj
-					caveOBJ.load('models/labyCave.obj', (obj) => { // charge l'objet
-						obj.position.set(0,60,0); // x, z, y
-						obj.scale.multiplyScalar(100);
-						// scene.add( obj ); // ajout de l'obj à la scène
-						// worldOctree.fromGraphNode( obj );
-					});
-				});
+				// loaderMTL.load('labyCave.mtl', (mtl) => { // new texture d'obj
+				// 	const caveOBJ = new OBJLoader(); // new obj
+				// 	caveOBJ.setMaterials(mtl); // ajout les texture a l'obj
+				// 	caveOBJ.load('models/labyCave.obj', (obj) => { // charge l'objet
+				// 		obj.position.set(0,60,0); // x, z, y
+				// 		obj.scale.multiplyScalar(100);
+				// 		// scene.add( obj ); // ajout de l'obj à la scène
+				// 		// worldOctree.fromGraphNode( obj );
+				// 	});
+				// });
 
 				const loaderGL = new GLTFLoader().setPath( './models/' );
 				loaderGL.load( 'labyCave.glb', ( gltf ) => {
-					gltf.scene.scale.multiplyScalar(100);
-					scene.add( gltf.scene );
-					worldOctree.fromGraphNode( gltf.scene );
+					// gltf.scene.scale.multiplyScalar(100);
+					// scene.add( gltf.scene );
+					// worldOctree.fromGraphNode( gltf.scene );
 					gltf.scene.traverse( function( node ) {
 				    if( node.material ) {
 								node.scale.multiplyScalar(100);
@@ -130,12 +130,55 @@
 					// animate();
 				} );
 
+				loaderGL.load( 'collision-world.glb', ( gltf ) => {
+					gltf.scene.rotation.z = 9;
+					gltf.scene.traverse( function( node ) {
+				  if( node.material ) {
+				    node.material.side = THREE.DoubleSide;
+				  }
+});
+				scene.add( gltf.scene );
+
+				worldOctree.fromGraphNode( gltf.scene );
+
+				// gltf.scene.traverse( child => {
+				//
+				// 	if ( child.isMesh ) {
+				//
+				// 		child.castShadow = true;
+				// 		child.receiveShadow = true;
+				//
+				// 		if ( child.material.map ) {
+				//
+				// 			child.material.map.anisotropy = 8;
+				//
+				// 		}
+				//
+				// 	}
+				//
+				// } );
+				//
+				// animate();
+
+			} );
+
+				// playerCollider.radius =  1.35;
+
 				// createPerso();
 
-				const geometry = new THREE.BoxGeometry( 10, 10, 10 );
+				const geometry = new THREE.BoxGeometry( 5, 5, 5 );
 				const material = new THREE.MeshBasicMaterial( { color: 0xFFFFFF } );
 				objCampi = new THREE.Mesh( geometry, material );
+				objCampi.position.set(0, 100, 0);
 				scene.add( objCampi );
+
+				const mesh = new THREE.Mesh(
+						new THREE.BoxGeometry( 200, 5, 200 ),
+						new THREE.MeshBasicMaterial( { color: 0x363b5c } )
+				);
+				worldOctree.fromGraphNode( mesh );
+				mesh.position.set(0, -60, 0);
+				// scene.add( mesh );
 
 
 				// ============= CAMERA =============
@@ -276,7 +319,7 @@
 				const result = worldOctree.capsuleIntersect( playerCollider );
 				playerOnFloor = false;
 				if ( result ) {
-					playerOnFloor = result.normal.y > 0;
+					playerOnFloor = result.normal.y >= 0;
 					if ( ! playerOnFloor ) {
 						playerVelocity.addScaledVector( result.normal, - result.normal.dot( playerVelocity ) );
 					}
@@ -310,8 +353,19 @@
 
 			}
 
-			function animate() {
+			function teleportPlayerIfOob(){
+				if (objCampi.position.y <= -150){
+					playerCollider.start.set( 0, -24.5, 0 );
+					playerCollider.end.set( 0, -25, 0 );
+					playerCollider.radius =  1.35;
+					objCampi.position.copy( playerCollider.end );
+					// objCampi.rotation.set( 0, 0, 0 );
+				}
+			}
 
+
+			function animate() {
+				console.log(objCampi.position);
 				const deltaTime = Math.min( 0.05, clock.getDelta() ) / STEPS_PER_FRAME;
 				window.requestAnimationFrame( animate ); // recup fps
 				stats.update();
@@ -321,7 +375,7 @@
 					control( deltaTime );
 					updatePlayer( deltaTime );
 				// 	updateSpheres( deltaTime );
-				// 	teleportPlayerIfOob();
+					teleportPlayerIfOob();
 				//
 				}
 
