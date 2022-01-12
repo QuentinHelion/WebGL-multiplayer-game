@@ -20,6 +20,8 @@
 			import { Capsule } from './jsm/math/Capsule.js';
 			import { Octree } from './jsm/math/Octree.js';
 
+			import { GLTFLoader } from './jsm/loaders/GLTFLoader.js';
+
 			// ============== VARIABLES ===============
 			let stats,gui,controls;
 			let camera, scene, renderer;
@@ -30,12 +32,14 @@
 			const clock = new THREE.Clock();
 			let objCampi;
 			const worldOctree = new Octree();
+			let playerOnFloor = false;
 
 			// ============== TABLEAUX ===============
 			const keyStates = {};
 
 			// ============== PARAMETRES ===============
-			const STEPS_PER_FRAME = 30;
+			const STEPS_PER_FRAME = 5;
+			const GRAVITY = 30;
 
 			// ============== APPEL FONCTIONS ==============
 			init();
@@ -57,7 +61,8 @@
 			function init() {
 
 				scene = new THREE.Scene();
-				scene.background = new THREE.Color( 0x000000 );
+				// scene.background = new THREE.Color( 0x000000 );
+				scene.background = new THREE.Color( 0x6e7bbb );
 
 				// ============= AFFICHAGE STATS =============
 				stats = new Stats(); // création stats
@@ -96,13 +101,38 @@
 					caveOBJ.load('models/labyCave.obj', (obj) => { // charge l'objet
 						obj.position.set(0,60,0); // x, z, y
 						obj.scale.multiplyScalar(100);
-						scene.add(obj); // ajout de l'obj à la scène
+						// scene.add( obj ); // ajout de l'obj à la scène
+						// worldOctree.fromGraphNode( obj );
 					});
 				});
 
+				const loaderGL = new GLTFLoader().setPath( './models/' );
+				loaderGL.load( 'labyCave.glb', ( gltf ) => {
+					gltf.scene.scale.multiplyScalar(100);
+					scene.add( gltf.scene );
+					worldOctree.fromGraphNode( gltf.scene );
+					gltf.scene.traverse( function( node ) {
+				    if( node.material ) {
+								node.scale.multiplyScalar(100);
+				        node.material.side = THREE.DoubleSide;
+				    }
+					});
+					// gltf.scene.traverse( child => {
+					// 	if ( child.isMesh ) {
+					// 		child.castShadow = true;
+					// 		child.receiveShadow = true;
+					// 		if ( child.material.map ) {
+					// 			child.material.map.anisotropy = 8;
+					// 		}
+					// 	}
+					// } );
+
+					// animate();
+				} );
+
 				// createPerso();
 
-				const geometry = new THREE.BoxGeometry( 200, 200, 200 );
+				const geometry = new THREE.BoxGeometry( 10, 10, 10 );
 				const material = new THREE.MeshBasicMaterial( { color: 0xFFFFFF } );
 				objCampi = new THREE.Mesh( geometry, material );
 				scene.add( objCampi );
@@ -120,7 +150,7 @@
 				// ============ EVENT LISTENER ============
 				window.addEventListener( 'resize', onWindowResize );
 				window.addEventListener( 'keyup', function(e){ // 'keyup' == touche presser
-					if(e.keyCode == 32){ if(animeState == 0){ animeState = 1; } } // si touche espace presser =>    32 == keycode de la touche espace
+					// if(e.keyCode == 32){ if(animeState == 0){ animeState = 1; } } // si touche espace presser =>    32 == keycode de la touche espace
 					if(e.keyCode == 71){ animePerso = 1 } // Si G
 				});
 			}
@@ -218,11 +248,11 @@
 					playerVelocity.add( getSideVector().multiplyScalar( speedDelta ) );
 				}
 
-				// if ( playerOnFloor ) {
-				// 	if ( keyStates[ 'Space' ] ) {
-				// 		playerVelocity.y = 15;
-				// 	}
-				// }
+				if ( playerOnFloor ) {
+					if ( keyStates[ 'Space' ] ) {
+						playerVelocity.y = 15;
+					}
+				}
 			}
 
 			function getForwardVector() {
@@ -244,12 +274,12 @@
 
 			function playerCollisions() {
 				const result = worldOctree.capsuleIntersect( playerCollider );
-				// playerOnFloor = false;
+				playerOnFloor = false;
 				if ( result ) {
-					// playerOnFloor = result.normal.y > 0;
-					// if ( ! playerOnFloor ) {
-					// 	playerVelocity.addScaledVector( result.normal, - result.normal.dot( playerVelocity ) );
-					// }
+					playerOnFloor = result.normal.y > 0;
+					if ( ! playerOnFloor ) {
+						playerVelocity.addScaledVector( result.normal, - result.normal.dot( playerVelocity ) );
+					}
 					playerCollider.translate( result.normal.multiplyScalar( result.depth ) );
 				}
 
@@ -259,14 +289,15 @@
 
 				let damping = Math.exp( - 4 * deltaTime ) - 1;
 
-				// if ( ! playerOnFloor ) {
+				if ( ! playerOnFloor ) {
 
-					// playerVelocity.y -= GRAVITY * deltaTime;
-					//
-					// // small air resistance
-					// damping *= 0.1;
+					playerVelocity.y -= GRAVITY * deltaTime;
 
-				// }
+					// small air resistance
+					damping *= 0.1;
+					// console.log(playerVelocity.y);
+
+				}
 
 				playerVelocity.addScaledVector( playerVelocity, damping );
 
