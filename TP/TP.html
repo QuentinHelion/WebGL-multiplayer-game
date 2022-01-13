@@ -109,14 +109,15 @@
 				const loaderGL = new GLTFLoader().setPath( './models/' );
 				loaderGL.load( 'labyCave.glb', ( gltf ) => {
 					// gltf.scene.scale.multiplyScalar(100);
-					// scene.add( gltf.scene );
-					// worldOctree.fromGraphNode( gltf.scene );
-					gltf.scene.traverse( function( node ) {
-				    if( node.material ) {
-								node.scale.multiplyScalar(100);
-				        node.material.side = THREE.DoubleSide;
-				    }
-					});
+					gltf.scene.position.set(0,-50,0);
+					scene.add( gltf.scene );
+					worldOctree.fromGraphNode( gltf.scene );
+					// gltf.scene.traverse( function( node ) {
+				  //   if( node.material ) {
+					// 			node.scale.multiplyScalar(100);
+				  //       node.material.side = THREE.DoubleSide;
+				  //   }
+					// });
 					// gltf.scene.traverse( child => {
 					// 	if ( child.isMesh ) {
 					// 		child.castShadow = true;
@@ -130,16 +131,16 @@
 					// animate();
 				} );
 
-				loaderGL.load( 'collision-world.glb', ( gltf ) => {
-					gltf.scene.rotation.z = 9;
-					gltf.scene.traverse( function( node ) {
-				  if( node.material ) {
-				    node.material.side = THREE.DoubleSide;
-				  }
-});
-				scene.add( gltf.scene );
-
-				worldOctree.fromGraphNode( gltf.scene );
+// 				loaderGL.load( 'collision-world.glb', ( gltf ) => {
+// 					gltf.scene.rotation.z = 9;
+// 					gltf.scene.traverse( function( node ) {
+// 				  if( node.material ) {
+// 				    node.material.side = THREE.DoubleSide;
+// 				  }
+// });
+// 				scene.add( gltf.scene );
+//
+// 				worldOctree.fromGraphNode( gltf.scene );
 
 				// gltf.scene.traverse( child => {
 				//
@@ -160,7 +161,7 @@
 				//
 				// animate();
 
-			} );
+			// } );
 
 				// playerCollider.radius =  1.35;
 
