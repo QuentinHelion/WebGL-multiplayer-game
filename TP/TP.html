@@ -78,7 +78,7 @@
 
 				// ============= LIGHT =============
 				// ===== AMBIANTE ======
-				const ambient = new THREE.AmbientLight( 0xffffff , 0.3 ); // (couleur, intensite)
+				const ambient = new THREE.AmbientLight( 0xffffff , 1 ); // (couleur, intensite)
 				scene.add( ambient );
 
 				// ===== LIGHT POINT =====
@@ -110,8 +110,8 @@
 				loaderGL.load( 'labyCave.glb', ( gltf ) => {
 					// gltf.scene.scale.multiplyScalar(100);
 					gltf.scene.position.set(0,-50,0);
-					scene.add( gltf.scene );
-					worldOctree.fromGraphNode( gltf.scene );
+					// scene.add( gltf.scene );
+					// worldOctree.fromGraphNode( gltf.scene );
 					// gltf.scene.traverse( function( node ) {
 				  //   if( node.material ) {
 					// 			node.scale.multiplyScalar(100);
@@ -131,16 +131,21 @@
 					// animate();
 				} );
 
-// 				loaderGL.load( 'collision-world.glb', ( gltf ) => {
-// 					gltf.scene.rotation.z = 9;
-// 					gltf.scene.traverse( function( node ) {
-// 				  if( node.material ) {
-// 				    node.material.side = THREE.DoubleSide;
-// 				  }
-// });
-// 				scene.add( gltf.scene );
-//
-// 				worldOctree.fromGraphNode( gltf.scene );
+				loaderGL.load( 'labyCave.glb', ( gltf ) => {
+					// gltf.scene.rotation.z = 9;
+					gltf.scene.traverse( function( node ) {
+						// node.material = new THREE.MeshStandardMaterial;
+						// node.material.side = THREE.DoubleSide;
+					  // if( node.material ) {
+					  //   node.material.side = THREE.DoubleSide;
+					  // 	}
+						});
+					// gltf.scene.mesh.doubleSided = true;
+					gltf.scene.position.set(0, -10, 0);
+					scene.add( gltf.scene );
+
+					worldOctree.fromGraphNode( gltf.scene );
+				});
 
 				// gltf.scene.traverse( child => {
 				//
@@ -167,7 +172,7 @@
 
 				// createPerso();
 
-				const geometry = new THREE.BoxGeometry( 5, 5, 5 );
+				const geometry = new THREE.BoxGeometry( 100, 50, 100 );
 				const material = new THREE.MeshBasicMaterial( { color: 0xFFFFFF } );
 				objCampi = new THREE.Mesh( geometry, material );
 				objCampi.position.set(0, 100, 0);
@@ -376,7 +381,7 @@
 					control( deltaTime );
 					updatePlayer( deltaTime );
 				// 	updateSpheres( deltaTime );
-					teleportPlayerIfOob();
+					// teleportPlayerIfOob();
 				//
 				}
 
