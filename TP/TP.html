@@ -144,7 +144,7 @@
 					gltf.scene.position.set(0, -10, 0);
 					scene.add( gltf.scene );
 
-					worldOctree.fromGraphNode( gltf.scene );
+					// worldOctree.fromGraphNode( gltf.scene );
 				});
 
 				// gltf.scene.traverse( child => {
@@ -178,13 +178,13 @@
 				objCampi.position.set(0, 100, 0);
 				scene.add( objCampi );
 
-				const mesh = new THREE.Mesh(
-						new THREE.BoxGeometry( 200, 5, 200 ),
-						new THREE.MeshBasicMaterial( { color: 0x363b5c } )
+				const sol = new THREE.Mesh(
+						new THREE.BoxGeometry( 8000, 5, 8000 ),
+						new THREE.MeshBasicMaterial( { color: 0x363b5c, transparent: true, opacity: 0.8  } )
 				);
-				worldOctree.fromGraphNode( mesh );
-				mesh.position.set(0, -60, 0);
-				// scene.add( mesh );
+				sol.position.set(3500, -60, 3500);
+				scene.add( sol );
+				worldOctree.fromGraphNode( sol );
 
 
 				// ============= CAMERA =============
@@ -371,7 +371,7 @@
 
 
 			function animate() {
-				console.log(objCampi.position);
+				// console.log(objCampi.position);
 				const deltaTime = Math.min( 0.05, clock.getDelta() ) / STEPS_PER_FRAME;
 				window.requestAnimationFrame( animate ); // recup fps
 				stats.update();
