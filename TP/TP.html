@@ -279,8 +279,8 @@
 
 			function control( deltaTime ) {
 				// gives a bit of air control
-				 // * ( playerOnFloor ? 25 : 8 );
-				const speedDelta = deltaTime;
+				 // * ( playerOnFloor ? 30 : 90 );
+				const speedDelta = deltaTime * ( playerOnFloor ? 30 : 90 );
 				if ( keyStates[ 'KeyW' ] ) {
 					playerVelocity.add( getForwardVector().multiplyScalar( speedDelta ) );
 				}
@@ -299,7 +299,7 @@
 
 				if ( playerOnFloor ) {
 					if ( keyStates[ 'Space' ] ) {
-						playerVelocity.y = 15;
+						playerVelocity.y = 70;
 					}
 				}
 			}
@@ -381,7 +381,7 @@
 					control( deltaTime );
 					updatePlayer( deltaTime );
 				// 	updateSpheres( deltaTime );
-					// teleportPlayerIfOob();
+					teleportPlayerIfOob();
 				//
 				}
 
