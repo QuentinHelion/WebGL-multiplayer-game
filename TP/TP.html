@@ -345,12 +345,13 @@
 				objChampi.position.copy( playerCollider.end );
 			}
 
-			// function updateLight(){
-			// 	// pointLight.position.set(objChampi.x, objChampi.y+40, objChampi.z);
-			// 	pointLight.position.set(objChampi.position);
-			// 	pointLight.position.y = 10;
-			// 	// console.log(pointLight.position);
-			// }
+			function updateLight(){
+				// pointLight.position.set(objChampi.x, objChampi.y+40, objChampi.z);
+				// pointLight.position.set(objChampi.position);
+				// pointLight.position.y = 10;
+				pointLight.intensity = Math.floor(Math.random() * 2);
+				// console.log(pointLight.position);
+			}
 
 			function teleportPlayerIfOob(){
 				if (objChampi.position.y <= -150){
@@ -371,7 +372,7 @@
 				for ( let i = 0; i < STEPS_PER_FRAME; i ++ ) {
 					control( deltaTime );
 					updatePlayer( deltaTime );
-					// updateLight();
+					updateLight();
 					teleportPlayerIfOob();
 				}
 				// console.log(pointLight.position);
