@@ -26,6 +26,7 @@
 			let stats,gui,controls;
 			let camera, scene, renderer;
 			let pointLight, spotLightHelper;
+			let obc, obg;
 			const playerVelocity = new THREE.Vector3();
 			const playerDirection = new THREE.Vector3();
 			const playerCollider = new Capsule( new THREE.Vector3( 0, 0.35, 0 ), new THREE.Vector3( 0, 1, 0 ), 0.35 );
@@ -103,17 +104,20 @@
 				});
 
 				createPerso();
+				// objChampi.position.set(0, 100, 0);
 
-				const geometry = new THREE.BoxGeometry( 100, 50, 100 );
+				const geometry = new THREE.BoxGeometry( 5, 5, 5 );
 				const material = new THREE.MeshBasicMaterial( { color: 0xFFFFFF } );
+				const mesh = new THREE.Mesh( geometry, material );
 				objChampi = new THREE.Mesh( geometry, material );
 				objChampi.position.set(0, 100, 0);
-				// scene.add( objChampi );
+				pointLight.add( mesh );
 
 				const sol = new THREE.Mesh(
 						new THREE.BoxGeometry( 8000, 5, 8000 ),
-						new THREE.MeshBasicMaterial( { color: 0x363b5c, transparent: true, opacity: 0.8  } )
+						new THREE.MeshPhongMaterial( { color: 0x363b5c, transparent: true, opacity: 0.8  } )
 				);
+				sol.receiveShadow = true;
 				sol.position.set(3500, -60, 3500);
 				scene.add( sol );
 				worldOctree.fromGraphNode( sol );
@@ -141,7 +145,6 @@
 			// ============== FONCTIONS UTILES ==============
 			// ===== CREATION PERSONNAGE =====
 			function createPerso(){
-				const angle = [0,90,180,-90];
 				const loaderFBX = new FBXLoader();
 				loaderFBX.setPath( 'models/' ); // emplacement des fichiers
 				loaderFBX.load( 'champi.fbx', function ( obj ) {
@@ -152,10 +155,66 @@
 						}
 					} );
 					// obj.getWorldDirection( playerDirection );
+					// obj.position.set(0, 100, 0);
 					scene.add( obj );
 					objChampi = obj;
 				});
 				console.log('createPerso end');
+			}
+
+			// ===== BUILD CHEST =====
+			function buildChest(){
+				// ===== GEMME =====
+				loaderMTL.load('gemme.mtl', (mtl) => { // new texture d'obj
+					const gemmeOBJ = new OBJLoader(); // new obj
+					gemmeOBJ.setMaterials(mtl); // ajout les texture a l'obj
+					gemmeOBJ.load('models/gemme.obj', (obj) => { // charge l'objet
+						obj.position.set(0,45,0); // x, z, y
+						obj.traverse( function ( child ) { // Ombres
+							if ( child instanceof THREE.Mesh ) { // cree un objet transparent autour l'objet qui prend et renvoie les ombres
+								child.receiveShadow = true;
+								child.castShadow = true;
+							}
+						});
+						obg = obj; // obliger de mettre l'objet dans une variable externe pour pouvoir l'appeler ensuite dans d'autre fonction
+						scene.add(obj); // ajout de l'obj à la scène
+					});
+				});
+
+
+				// ======== CHEST =======
+				// ===== CHEST TOP =====
+				loaderMTL.load('chestTop.mtl', (mtl) => { // new texture d'obj
+					const chtOBJ = new OBJLoader(); // new obj
+					chtOBJ.setMaterials(mtl); // ajout les texture a l'obj
+					chtOBJ.load('models/chestTop.obj', (obj) => { // charge l'objet
+						obj.position.set(0,75,-25); // x, z, y
+						obj.traverse( function ( child ) {
+							if ( child instanceof THREE.Mesh ) {
+								child.receiveShadow = true;
+								child.castShadow = true;
+							}
+						});
+						obc = obj;
+						scene.add(obj); // ajout de l'obj à la scène
+					});
+				});
+
+				// ===== CHEST BOTTOM =====
+				loaderMTL.load('chestBottom.mtl', (mtl) => { // new texture d'obj
+					const caveOBJ = new OBJLoader(); // new obj
+					caveOBJ.setMaterials(mtl); // ajout les texture a l'obj
+					caveOBJ.load('models/chestBottom.obj', (obj) => { // charge l'objet
+						obj.position.set(0,40,0); // x, z, y
+						obj.traverse( function ( child ) {
+							if ( child instanceof THREE.Mesh ) {
+								child.receiveShadow = true;
+								child.castShadow = true;
+							}
+						});
+						scene.add(obj); // ajout de l'obj à la scène
+					});
+				});
 			}
 
 			// ===== WINDOW REZISE =====
@@ -281,7 +340,16 @@
 				const deltaPosition = playerVelocity.clone().multiplyScalar( deltaTime );
 				playerCollider.translate( deltaPosition );
 				playerCollisions();
+				updateLight();
+				
 				objChampi.position.copy( playerCollider.end );
+			}
+
+			function updateLight(){
+				// pointLight.position.set(objChampi.x, objChampi.y+40, objChampi.z);
+				pointLight.position.set(objChampi.position);
+				pointLight.position.y = 10;
+				// console.log(pointLight.position);
 			}
 
 			function teleportPlayerIfOob(){
@@ -303,6 +371,7 @@
 				for ( let i = 0; i < STEPS_PER_FRAME; i ++ ) {
 					control( deltaTime );
 					updatePlayer( deltaTime );
+					// updateLight();
 					teleportPlayerIfOob();
 				}
 
