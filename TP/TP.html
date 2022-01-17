@@ -30,7 +30,7 @@
 			const playerDirection = new THREE.Vector3();
 			const playerCollider = new Capsule( new THREE.Vector3( 0, 0.35, 0 ), new THREE.Vector3( 0, 1, 0 ), 0.35 );
 			const clock = new THREE.Clock();
-			let objCampi;
+			let objChampi;
 			const worldOctree = new Octree();
 			let playerOnFloor = false;
 
@@ -83,7 +83,7 @@
 
 				// ===== LIGHT POINT =====
 				pointLight = new THREE.PointLight(0xffffff, 0.5); // (couleur, intensite)
-				pointLight.position.set(0, 300, 0); // position (x, z, y)
+				pointLight.position.set(0, 10, 0); // position (x, z, y)
 				pointLight.castShadow = true; // renvoie des ombres
 				scene.add(pointLight);
 
@@ -95,88 +95,20 @@
 				loaderMTL.setMaterialOptions( { side: THREE.DoubleSide } ); // texture appliquer des 2 cotés de l'objet
 
 				// ===== CAVE =====
-				// loaderMTL.load('labyCave.mtl', (mtl) => { // new texture d'obj
-				// 	const caveOBJ = new OBJLoader(); // new obj
-				// 	caveOBJ.setMaterials(mtl); // ajout les texture a l'obj
-				// 	caveOBJ.load('models/labyCave.obj', (obj) => { // charge l'objet
-				// 		obj.position.set(0,60,0); // x, z, y
-				// 		obj.scale.multiplyScalar(100);
-				// 		// scene.add( obj ); // ajout de l'obj à la scène
-				// 		// worldOctree.fromGraphNode( obj );
-				// 	});
-				// });
-
 				const loaderGL = new GLTFLoader().setPath( './models/' );
 				loaderGL.load( 'labyCave.glb', ( gltf ) => {
-					// gltf.scene.scale.multiplyScalar(100);
-					gltf.scene.position.set(0,-50,0);
-					// scene.add( gltf.scene );
-					// worldOctree.fromGraphNode( gltf.scene );
-					// gltf.scene.traverse( function( node ) {
-				  //   if( node.material ) {
-					// 			node.scale.multiplyScalar(100);
-				  //       node.material.side = THREE.DoubleSide;
-				  //   }
-					// });
-					// gltf.scene.traverse( child => {
-					// 	if ( child.isMesh ) {
-					// 		child.castShadow = true;
-					// 		child.receiveShadow = true;
-					// 		if ( child.material.map ) {
-					// 			child.material.map.anisotropy = 8;
-					// 		}
-					// 	}
-					// } );
-
-					// animate();
-				} );
-
-				loaderGL.load( 'labyCave.glb', ( gltf ) => {
-					// gltf.scene.rotation.z = 9;
-					gltf.scene.traverse( function( node ) {
-						// node.material = new THREE.MeshStandardMaterial;
-						// node.material.side = THREE.DoubleSide;
-					  // if( node.material ) {
-					  //   node.material.side = THREE.DoubleSide;
-					  // 	}
-						});
-					// gltf.scene.mesh.doubleSided = true;
 					gltf.scene.position.set(0, -10, 0);
 					scene.add( gltf.scene );
-
 					// worldOctree.fromGraphNode( gltf.scene );
 				});
 
-				// gltf.scene.traverse( child => {
-				//
-				// 	if ( child.isMesh ) {
-				//
-				// 		child.castShadow = true;
-				// 		child.receiveShadow = true;
-				//
-				// 		if ( child.material.map ) {
-				//
-				// 			child.material.map.anisotropy = 8;
-				//
-				// 		}
-				//
-				// 	}
-				//
-				// } );
-				//
-				// animate();
-
-			// } );
-
-				// playerCollider.radius =  1.35;
-
-				// createPerso();
+				createPerso();
 
 				const geometry = new THREE.BoxGeometry( 100, 50, 100 );
 				const material = new THREE.MeshBasicMaterial( { color: 0xFFFFFF } );
-				objCampi = new THREE.Mesh( geometry, material );
-				objCampi.position.set(0, 100, 0);
-				scene.add( objCampi );
+				objChampi = new THREE.Mesh( geometry, material );
+				objChampi.position.set(0, 100, 0);
+				// scene.add( objChampi );
 
 				const sol = new THREE.Mesh(
 						new THREE.BoxGeometry( 8000, 5, 8000 ),
@@ -221,7 +153,7 @@
 					} );
 					// obj.getWorldDirection( playerDirection );
 					scene.add( obj );
-					objCampi = obj;
+					objChampi = obj;
 				});
 				console.log('createPerso end');
 			}
@@ -278,9 +210,7 @@
 			}
 
 			function control( deltaTime ) {
-				// gives a bit of air control
-				 // * ( playerOnFloor ? 30 : 90 );
-				const speedDelta = deltaTime * ( playerOnFloor ? 30 : 90 );
+				const speedDelta = deltaTime * ( playerOnFloor ? 350 : 90 );
 				if ( keyStates[ 'KeyW' ] ) {
 					playerVelocity.add( getForwardVector().multiplyScalar( speedDelta ) );
 				}
@@ -302,10 +232,17 @@
 						playerVelocity.y = 70;
 					}
 				}
+
+				if ( keyStates[ 'KeyQ' ] ) {
+					objChampi.rotation.y += 0.03;
+				}
+				if ( keyStates[ 'KeyE' ] ) {
+					objChampi.rotation.y -= 0.03;
+				}
 			}
 
 			function getForwardVector() {
-				objCampi.getWorldDirection( playerDirection );
+				objChampi.getWorldDirection( playerDirection );
 				playerDirection.y = 0;
 				playerDirection.normalize();
 
@@ -313,10 +250,10 @@
 			}
 
 			function getSideVector() {
-				objCampi.getWorldDirection( playerDirection );
+				objChampi.getWorldDirection( playerDirection );
 				playerDirection.y = 0;
 				playerDirection.normalize();
-				playerDirection.cross( objCampi.up );
+				playerDirection.cross( objChampi.up );
 
 				return playerDirection;
 			}
@@ -335,43 +272,29 @@
 			}
 
 			function updatePlayer( deltaTime ) {
-
 				let damping = Math.exp( - 4 * deltaTime ) - 1;
-
 				if ( ! playerOnFloor ) {
-
 					playerVelocity.y -= GRAVITY * deltaTime;
-
-					// small air resistance
 					damping *= 0.1;
-					// console.log(playerVelocity.y);
-
 				}
-
 				playerVelocity.addScaledVector( playerVelocity, damping );
-
 				const deltaPosition = playerVelocity.clone().multiplyScalar( deltaTime );
 				playerCollider.translate( deltaPosition );
-
 				playerCollisions();
-
-				objCampi.position.copy( playerCollider.end );
-
+				objChampi.position.copy( playerCollider.end );
 			}
 
 			function teleportPlayerIfOob(){
-				if (objCampi.position.y <= -150){
+				if (objChampi.position.y <= -150){
 					playerCollider.start.set( 0, -24.5, 0 );
 					playerCollider.end.set( 0, -25, 0 );
 					playerCollider.radius =  1.35;
-					objCampi.position.copy( playerCollider.end );
-					// objCampi.rotation.set( 0, 0, 0 );
+					objChampi.position.copy( playerCollider.end );
 				}
 			}
 
 
 			function animate() {
-				// console.log(objCampi.position);
 				const deltaTime = Math.min( 0.05, clock.getDelta() ) / STEPS_PER_FRAME;
 				window.requestAnimationFrame( animate ); // recup fps
 				stats.update();
@@ -380,9 +303,7 @@
 				for ( let i = 0; i < STEPS_PER_FRAME; i ++ ) {
 					control( deltaTime );
 					updatePlayer( deltaTime );
-				// 	updateSpheres( deltaTime );
 					teleportPlayerIfOob();
-				//
 				}
 
 
