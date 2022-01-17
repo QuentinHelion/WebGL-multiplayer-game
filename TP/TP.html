@@ -84,9 +84,9 @@
 
 				// ===== LIGHT POINT =====
 				pointLight = new THREE.PointLight(0xffffff, 0.5); // (couleur, intensite)
-				pointLight.position.set(0, 10, 0); // position (x, z, y)
+				pointLight.position.set(0, 100, 0); // position (x, z, y)
 				pointLight.castShadow = true; // renvoie des ombres
-				scene.add(pointLight);
+				// scene.add(pointLight);
 
 
 				// ============== IMPORT OBJETS ==============
@@ -110,8 +110,9 @@
 				const material = new THREE.MeshBasicMaterial( { color: 0xFFFFFF } );
 				const mesh = new THREE.Mesh( geometry, material );
 				objChampi = new THREE.Mesh( geometry, material );
-				objChampi.position.set(0, 100, 0);
-				pointLight.add( mesh );
+				// objChampi.position.set(0, 100, 0);
+				// mesh.position.set(0, 100, 0);
+				objChampi.add( pointLight );
 
 				const sol = new THREE.Mesh(
 						new THREE.BoxGeometry( 8000, 5, 8000 ),
@@ -156,6 +157,7 @@
 					} );
 					// obj.getWorldDirection( playerDirection );
 					// obj.position.set(0, 100, 0);
+					obj.add(pointLight);
 					scene.add( obj );
 					objChampi = obj;
 				});
@@ -340,17 +342,15 @@
 				const deltaPosition = playerVelocity.clone().multiplyScalar( deltaTime );
 				playerCollider.translate( deltaPosition );
 				playerCollisions();
-				updateLight();
-				
 				objChampi.position.copy( playerCollider.end );
 			}
 
-			function updateLight(){
-				// pointLight.position.set(objChampi.x, objChampi.y+40, objChampi.z);
-				pointLight.position.set(objChampi.position);
-				pointLight.position.y = 10;
-				// console.log(pointLight.position);
-			}
+			// function updateLight(){
+			// 	// pointLight.position.set(objChampi.x, objChampi.y+40, objChampi.z);
+			// 	pointLight.position.set(objChampi.position);
+			// 	pointLight.position.y = 10;
+			// 	// console.log(pointLight.position);
+			// }
 
 			function teleportPlayerIfOob(){
 				if (objChampi.position.y <= -150){
@@ -374,9 +374,7 @@
 					// updateLight();
 					teleportPlayerIfOob();
 				}
-
-
-
+				// console.log(pointLight.position);
 				renderer.render( scene, camera );
 			}
     </script>
