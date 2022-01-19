@@ -3,23 +3,26 @@ const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 
-app.use(express.static('../../../public_html/udemy/blockland/'));
-app.use(express.static('../../../public_html/libs'));
-app.use(express.static('../../../public_html/udemy/blockland/v3'));
+app.use(express.static('./'));
 app.get('/',function(req, res) {
-    res.sendFile(__dirname + '/../../../public_html/udemy/blockland/v3/index.html');
+    // console.log(res.sendFile);
+    res.sendFile('./index.html');
 });
 
+console.log('starting...');
+
 io.sockets.on('connection', function(socket){
+  console.log('connection');
 	socket.userData = { x:0, y:0, z:0, heading:0 };//Default values;
- 
+
 	console.log(`${socket.id} connected`);
 	socket.emit('setId', { id:socket.id });
-	
+
     socket.on('disconnect', function(){
+		console.log(`Player ${socket.id} disconnected`)
 		socket.broadcast.emit('deletePlayer', { id: socket.id });
-    });	
-	
+    });
+
 	socket.on('init', function(data){
 		console.log(`socket.init ${data.model}`);
 		socket.userData.model = data.model;
@@ -31,7 +34,7 @@ io.sockets.on('connection', function(socket){
 		socket.userData.pb = data.pb,
 		socket.userData.action = "Idle";
 	});
-	
+
 	socket.on('update', function(data){
 		socket.userData.x = data.x;
 		socket.userData.y = data.y;
@@ -40,7 +43,7 @@ io.sockets.on('connection', function(socket){
 		socket.userData.pb = data.pb,
 		socket.userData.action = data.action;
 	});
-	
+
 	socket.on('chat message', function(data){
 		console.log(`chat message:${data.id} ${data.message}`);
 		io.to(data.id).emit('chat message', { id: socket.id, message: data.message });
@@ -48,13 +51,13 @@ io.sockets.on('connection', function(socket){
 });
 
 http.listen(2002, function(){
-  console.log('listening on *:2002');
+  console.log('listening on *:2002 - origin set');
 });
 
 setInterval(function(){
 	const nsp = io.of('/');
     let pack = [];
-	
+
     for(let id in io.sockets.sockets){
         const socket = nsp.connected[id];
 		//Only push sockets that have been initialised
@@ -69,7 +72,7 @@ setInterval(function(){
 				heading: socket.userData.heading,
 				pb: socket.userData.pb,
 				action: socket.userData.action
-			});    
+			});
 		}
     }
 	if (pack.length>0) io.emit('remoteData', pack);
