@@ -35,12 +35,13 @@ class Game{
 
     this.clock = new THREE.Clock();
 
-
 		window.onError = function(error){
 			console.error(JSON.stringify(error));
 		}
+	}
 
-
+	set activeCamera(object){
+		this.cameras.active = object;
 	}
 
   init(){
