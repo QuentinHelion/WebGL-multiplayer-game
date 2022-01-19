@@ -1,13 +1,20 @@
-			// ============== IMPORTS ==============
-// import * as THREE from '../build/three.module.js'; // Element threejs
-// import { OrbitControls } from 'jsm/controls/OrbitControls.js'; // Controle de la caméra
-// import Stats from 'jsm/libs/stats.module.js'; // Affichage des stats de la page
-
 class Game{
 	constructor(){
-    // this.container;
+		if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+		this.modes = Object.freeze({
+			NONE:   Symbol("none"),
+			PRELOAD: Symbol("preload"),
+			INITIALISING:  Symbol("initialising"),
+			CREATING_LEVEL: Symbol("creating_level"),
+			ACTIVE: Symbol("active"),
+			GAMEOVER: Symbol("gameover")
+		});
+		this.mode = this.modes.NONE;
+
+    this.container;
     this.player;
-    // this.cameras;
+    this.cameras;
     this.camera;
     this.scene;
     this.renderer;
@@ -17,13 +24,28 @@ class Game{
     this.initialisingPlayers = [];
     this.remoteData = [];
 
-    this.clock = new THREE.Clock();
+		this.container = document.createElement( 'div' );
+		this.container.style.height = '100%';
+		document.body.appendChild( this.container );
 
 		const game = this;
 		game.init();
+
+		this.mode = this.modes.PRELOAD;
+
+    this.clock = new THREE.Clock();
+
+
+		window.onError = function(error){
+			console.error(JSON.stringify(error));
+		}
+
+
 	}
 
   init(){
+
+		this.camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 10, 200000 );
 
 		this.scene = new THREE.Scene();
 		this.scene.background = new THREE.Color( 0x6e7bbb );
@@ -33,8 +55,10 @@ class Game{
 		this.renderer.setPixelRatio( window.devicePixelRatio );
 		this.renderer.setSize( window.innerWidth, window.innerHeight );
 		this.renderer.shadowMap.enabled = true; // ombre activer
-		this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; // type d'encoding pour les ombres
-		document.body.appendChild( this.renderer.domElement );
+		// this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; // type d'encoding pour les ombres
+		// document.body.appendChild( this.renderer.domElement );
+		this.container.appendChild( this.renderer.domElement );
+
 
 		const ambient = new THREE.AmbientLight( 0xaaaaaa );
         this.scene.add( ambient );
