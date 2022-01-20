@@ -86,7 +86,7 @@ setInterval(function(){
   }
 	if (pack.length>0) {
     io.emit('remoteData', pack);
-    console.log(pack);
+    // console.log(pack);
     // console.log('emit remoteData');
   }
 }, 40);

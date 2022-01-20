@@ -10,64 +10,66 @@
 		</head>
 	</head>
 	<body>
-		<!-- <div id="message">
-			<p id="message_text"></p>
-			<button id="message_ok">OK</button>
-		</div>
-		<div id="chat">
-			<form id="msg-form" action="">
-      			<input id="m" autocomplete="off" /><button>Send</button>
-    		</form>
-		</div> -->
-		<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/92/three.min.js"></script> -->
-		<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
-		<!-- <script src="/socket.io/socket.io.js"></script> -->
-
-		<!-- <script src= "libs/inflate.min.js"></script> -->
-		<!-- <script src="FBXLoader.js"></script> -->
-		<!-- <script src="jsm/controls/OrbitControls.js"></script> -->
-		<!-- <script src="Detector.js"></script> -->
-		<!-- <script src="libs/toon3d.js"></script> -->
-		<!-- <script src="multi.js"></script> -->
-		<!-- <script>
-			var game;
-			document.addEventListener("DOMContentLoaded", function(){ game = new Game(); });
-		</script> -->
+		<!-- <script src="https://code.jquery.com/jquery-1.11.1.js"></script> -->
 		<script type="module">
-
 			// ============== IMPORTS ==============
 			import * as THREE from './build/three.module.js'; // Element threejs
 			import { OrbitControls } from './jsm/controls/OrbitControls.js'; // Controle de la caméra
+			import { GUI } from './jsm/libs/dat.gui.module.js'; // Ajout d'un GUI
 			import Stats from './jsm/libs/stats.module.js'; // Affichage des stats de la page
 
-			// container;
-			let player, player2;
-			let playerId;
-			// cameras;
-			let stats;
-			let controls;
-			let camera;
-			let scene;
-			let renderer;
-			// animations = {};
-			// assetsPath = 'assets/';
+			import { GLTFLoader } from './jsm/loaders/GLTFLoader.js';
+			import {OBJLoader} from './jsm/loaders/OBJLoader.js'; // ajout d'obj
+			import {MTLLoader} from './jsm/loaders/MTLLoader.js'; // ² obj .mtl (pour texture)
+			import { FBXLoader } from './jsm/loaders/FBXLoader.js'; // FBX looader
+			import { Capsule } from './jsm/math/Capsule.js';
+			import { Octree } from './jsm/math/Octree.js';
 
-			let remotePlayers = [];
-			let remoteColliders = [];
-			let initialisingPlayers = [];
-			let dataArray = [];
+			// ============== VARIABLES ===============
+			let stats,gui,controls;
+			let camera, scene, renderer;
+			let player, player2, playerId;
+			let objChampi;
+			let pointLight, spotLightHelper;
+			let playerOnFloor = false;
 
-			let clock = new THREE.Clock();
+			// ============== CONSTANTES ==============
+			const playerVelocity = new THREE.Vector3();
+			const playerDirection = new THREE.Vector3();
+			const playerCollider = new Capsule( new THREE.Vector3( 0, 0.35, 0 ), new THREE.Vector3( 0, 1, 0 ), 0.35 );
+			const clock = new THREE.Clock();
 			const socket = io.connect("localhost:3000");
+			const worldOctree = new Octree();
+
+			// ============== TABLEAUX ===============
+			const keyStates = {};
+			let dataArray = [];
+			let playerArray = new Array();
+			// animations = {};
+
+			// ============== PARAMETRES ===============
+			const STEPS_PER_FRAME = 5;
+			const GRAVITY = 30;
+
+			// =============== EVENT LISTENER ===============
+			document.addEventListener( 'keydown', ( event ) => {
+				keyStates[ event.code ] = true;
+			} );
+
+			document.addEventListener( 'keyup', ( event ) => {
+				keyStates[ event.code ] = false;
+			} );
 
 			// ============== APPEL FONCTIONS ==============
 			init();
+			buildGui();
 			animate();
-			console.log(socket);
 
 
+			// ============== FONCTIONS ==============
 			function init() {
 
+				// ============= SCENE =============
 				scene = new THREE.Scene();
 				scene.background = new THREE.Color( 0x6e7bbb );
 
@@ -83,16 +85,56 @@
 				renderer.shadowMap.type = THREE.PCFSoftShadowMap; // type d'encoding pour les ombres
 				document.body.appendChild( renderer.domElement );
 
+
+				// ============= LIGHT =============
+				// ===== AMBIANTE ======
+				const ambient = new THREE.AmbientLight( 0xffffff , 1 ); // (couleur, intensite)
+				scene.add( ambient );
+
+				// ===== LIGHT POINT =====
+				pointLight = new THREE.PointLight(0xffffff, 0.5); // (couleur, intensite)
+				pointLight.position.set(0, 100, 0); // position (x, z, y)
+				pointLight.castShadow = true; // renvoie des ombres
+				// scene.add(pointLight);
+
+
+				// player = new THREE.Mesh(
+				// 		new THREE.BoxGeometry( 30, 30, 30 ),
+				// 		new THREE.MeshBasicMaterial( { color: 0xfc7db4 } )
+				// );
+				// player2 = new THREE.Mesh(
+				// 		new THREE.BoxGeometry( 30, 30, 30 ),
+				// 		new THREE.MeshBasicMaterial( { color: 0x90324e } )
+				// );
+				// scene.add( player2 );
+				// scene.add( player );
+
+				// player = createPerso();
+				// player2 = createPerso();
+				//
+				// scene.add( player2 );
+				// scene.add( player );
+
+				createPerso();
+				createPerso2();
+
+				console.log(playerArray);
+
+				player = playerArray[0];
 				player = new THREE.Mesh(
-						new THREE.BoxGeometry( 30, 30, 30 ),
-						new THREE.MeshBasicMaterial( { color: 0xfc7db4 } )
+					new THREE.BoxGeometry( 5, 5, 5 ),
+					new THREE.MeshBasicMaterial( { color: 0xFFFFFF } )
 				);
+
+				player2 = playerArray[1];
 				player2 = new THREE.Mesh(
-						new THREE.BoxGeometry( 30, 30, 30 ),
-						new THREE.MeshBasicMaterial( { color: 0x90324e } )
+					new THREE.BoxGeometry( 5, 5, 5 ),
+					new THREE.MeshBasicMaterial( { color: 0xFFFFFF } )
 				);
-				scene.add( player2 );
-				scene.add( player );
+
+				console.log(player2);
+
+				// player2 = createPerso();
 
 				socket.emit('init', {
 					// model: model,
@@ -111,7 +153,7 @@
 				sol.receiveShadow = true;
 				sol.position.set(3500, -60, 3500);
 				scene.add( sol );
-
+				worldOctree.fromGraphNode( sol );
 
 				// ============= CAMERA =============
 				camera = new THREE.PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 1, 1500 );
@@ -124,16 +166,197 @@
 
 				// ============ EVENT LISTENER ============
 				window.addEventListener( 'resize', onWindowResize );
-				window.addEventListener( 'keydown', ( event ) => {
-					move(player);
+				// window.addEventListener( 'keydown', ( event ) => {
+				// 	move(player);
+				// });
+			}
+
+			// ================= FONCTIONS UTILES =================
+			// ============== WINDOW REZISE ==============
+			function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
+
+			// ===== CREATION PERSONNAGE =====
+			function createPerso(){
+				const loaderFBX = new FBXLoader();
+				loaderFBX.setPath( 'models/' ); // emplacement des fichiers
+				loaderFBX.load( 'champi.fbx', function ( obj ) {
+					obj.traverse( function ( child ) {
+						if ( child.isMesh ) {
+							child.castShadow = true;
+							child.receiveShadow = true;
+						}
+					} );
+					// obj.getWorldDirection( playerDirection );
+					// obj.position.set(0, 100, 0);
+					obj.add(pointLight);
+					scene.add( obj );
+					// return obj;/
+					player = obj;
+					// playerArray.push(obj);
 				});
+				console.log('createPerso end');
 			}
 
-			function move(object){
-				object.position.x += 3;
-				updateSocket(object);
+			function createPerso2(){
+				const loaderFBX = new FBXLoader();
+				loaderFBX.setPath( 'models/' ); // emplacement des fichiers
+				loaderFBX.load( 'champi.fbx', function ( obj ) {
+					obj.traverse( function ( child ) {
+						if ( child.isMesh ) {
+							child.castShadow = true;
+							child.receiveShadow = true;
+						}
+					} );
+					// obj.getWorldDirection( playerDirection );
+					// obj.position.set(0, 100, 0);
+					obj.add(pointLight);
+					scene.add( obj );
+					// return obj;/
+					player2 = obj;
+					// playerArray.push(obj);
+				});
+				console.log('createPerso end');
 			}
 
+			// ============== GUI ==============
+			function buildGui() {
+				gui = new GUI(); // création gui
+
+				// ========= SETTINGS LIST =========
+				const params = { // liste des parametres
+					Helper: false, // case à cocher => renvoie true OU false
+					Freecam: false,
+					Intensite: pointLight.intensity,
+        	Background: scene.background.getHex(), //getHex() => recup la couleur en hexa
+					"Ajouter personnage": function(){ createPerso(); }
+				};
+
+				// ========= SETTINGS ACTIONS =========
+				gui.add( params, 'Helper', true, false ).onChange( function( val ) {
+					spotLightHelper.visible = val; // defini la visibilite des helpers sur true OU false
+					shadowCameraHelper.visible = val;
+				});
+
+				gui.add( params, 'Freecam', true, false ).onChange( function( val ) { // permet de désactiver les limites de la camera
+					if(val){ // si val == true (donc cocher)
+						controls.minDistance = 0;
+						controls.maxDistance = 99999999;
+						controls.maxPolarAngle = 360;
+					} else { // si decocher
+						controls.minDistance = 150;
+						controls.maxDistance = 300;
+						controls.maxPolarAngle = Math.PI / 2.3;
+					}
+				});
+
+				gui.add( params, 'Intensite', 0, 10).onChange( function( val ) {
+        	pointLight.intensity = val;
+        });
+
+				gui.addColor( params, 'Background' ).onChange( function ( val ) {
+        	scene.background = new THREE.Color( val );
+        });
+
+				gui.add( params, "Ajouter personnage");
+
+				gui.open(); // Ajout du gui à la scene
+			}
+
+			// ============== CONTROLS ==============
+			function control( deltaTime ) {
+				const speedDelta = deltaTime * ( playerOnFloor ? 350 : 90 );
+				// console.log(keyStates);
+				if ( keyStates[ 'KeyW' ] ) {
+					playerVelocity.add( getForwardVector().multiplyScalar( speedDelta ) );
+				}
+
+				if ( keyStates[ 'KeyS' ] ) {
+					playerVelocity.add( getForwardVector().multiplyScalar( - speedDelta ) );
+				}
+
+				if ( keyStates[ 'KeyA' ] ) {
+					playerVelocity.add( getSideVector().multiplyScalar( - speedDelta ) );
+				}
+
+				if ( keyStates[ 'KeyD' ] ) {
+					playerVelocity.add( getSideVector().multiplyScalar( speedDelta ) );
+				}
+
+				if ( playerOnFloor ) {
+					if ( keyStates[ 'Space' ] ) {
+						playerVelocity.y = 70;
+					}
+				}
+				if ( keyStates[ 'KeyQ' ] ) {
+					player.rotation.y += 0.03;
+				}
+				if ( keyStates[ 'KeyE' ] ) {
+					player.rotation.y -= 0.03;
+				}
+			}
+
+			// ============== MOVEMEMENT ==============
+			function getForwardVector() {
+				player.getWorldDirection( playerDirection );
+				playerDirection.y = 0;
+				playerDirection.normalize();
+
+				return playerDirection;
+			}
+
+			function getSideVector() {
+				player.getWorldDirection( playerDirection );
+				playerDirection.y = 0;
+				playerDirection.normalize();
+				playerDirection.cross( player.up );
+
+				return playerDirection;
+			}
+
+			function playerCollisions() {
+				const result = worldOctree.capsuleIntersect( playerCollider );
+				playerOnFloor = false;
+				if ( result ) {
+					playerOnFloor = result.normal.y >= 0;
+					if ( ! playerOnFloor ) {
+						playerVelocity.addScaledVector( result.normal, - result.normal.dot( playerVelocity ) );
+					}
+					playerCollider.translate( result.normal.multiplyScalar( result.depth ) );
+				}
+
+			}
+
+			function updatePlayer( deltaTime ) {
+				let damping = Math.exp( - 4 * deltaTime ) - 1;
+				if ( ! playerOnFloor ) {
+					playerVelocity.y -= GRAVITY * deltaTime;
+					damping *= 0.1;
+				}
+				playerVelocity.addScaledVector( playerVelocity, damping );
+				const deltaPosition = playerVelocity.clone().multiplyScalar( deltaTime );
+				playerCollider.translate( deltaPosition );
+				playerCollisions();
+				player.position.copy( playerCollider.end );
+				updateSocket(player);
+			}
+
+			function teleportPlayerIfOob(){
+				if (player.position.y <= -150){
+					playerCollider.start.set( 0, -24.5, 0 );
+					playerCollider.end.set( 0, -25, 0 );
+					playerCollider.radius =  1.35;
+					player.position.copy( playerCollider.end );
+				}
+			}
+
+
+
+
+			// ============== FONCTION MULTIJOUEURS ==============
 			function remoteData(){
 				// console.log("remote !");
 				if(dataArray.length > 0){
@@ -159,44 +382,36 @@
 				// }
 			}
 
-			// ===== WINDOW REZISE =====
-			function onWindowResize() {
-				camera.aspect = window.innerWidth / window.innerHeight;
-				camera.updateProjectionMatrix();
-				renderer.setSize( window.innerWidth, window.innerHeight );
-			}
-
 			function animate() {
+				// ========= LOCAL PART =========
+				const deltaTime = Math.min( 0.05, clock.getDelta() ) / STEPS_PER_FRAME;
+				window.requestAnimationFrame( animate ); // animation de la page
+				stats.update();
+				for ( let i = 0; i < STEPS_PER_FRAME; i ++ ) {
+					control( deltaTime );
+					updatePlayer( deltaTime );
+					// updateLight();
+					teleportPlayerIfOob();
+				}
+
+				renderer.render( scene, camera );
+
+
+				// ========= MULTIPLAYER PART =========
 				socket.on('setId', function(data){
 					playerId = data.id
-					console.log( data.id );
+					// console.log( data.id );
 				});
 				socket.on('remoteData', function(data){
-					// if(data != undefined && data.id != playerId ){
-						// remoteData(data);
-					// }
 					dataArray = data;
 					remoteData();
 				});
 
-				socket.on('userData', function(userData){
-					// console.log(userData.x);
-					player.position.set(userData.x, userData.y,userData.z);
-				});
+				// socket.on('userData', function(userData){
+				// 	// console.log(userData.x);
+				// 	// player.position.set(userData.x, userData.y,userData.z);
+				// });
 
-				// updateSocket(player);
-				// const game = this;
-				// const dt = clock.getDelta();
-
-				// requestAnimationFrame( function(){ game.animate(); } );
-				// updateRemotePlayers(dt);
-				//
-				// if (player.motion !== undefined) player.move(dt);
-				//
-				// if (speechBubble!==undefined) speechBubble.show(camera.position);
-				window.requestAnimationFrame( animate ); // animation de la page
-				stats.update();
-				renderer.render( scene, camera );
 			}
 		</script>
 	</body>
