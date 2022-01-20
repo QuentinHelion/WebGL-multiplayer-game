@@ -20,7 +20,7 @@
     		</form>
 		</div> -->
 		<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/92/three.min.js"></script> -->
-		<!-- <script src="https://code.jquery.com/jquery-1.11.1.js"></script> -->
+		<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
 		<!-- <script src="/socket.io/socket.io.js"></script> -->
 
 		<!-- <script src= "libs/inflate.min.js"></script> -->
@@ -41,7 +41,8 @@
 			import Stats from './jsm/libs/stats.module.js'; // Affichage des stats de la page
 
 			// container;
-			let player;
+			let player, player2;
+			let playerId;
 			// cameras;
 			let stats;
 			let controls;
@@ -54,7 +55,7 @@
 			let remotePlayers = [];
 			let remoteColliders = [];
 			let initialisingPlayers = [];
-			let remoteData = [];
+			let dataArray = [];
 
 			let clock = new THREE.Clock();
 			const socket = io.connect("localhost:3000");
@@ -84,8 +85,13 @@
 
 				player = new THREE.Mesh(
 						new THREE.BoxGeometry( 30, 30, 30 ),
-						new THREE.MeshBasicMaterial( { color: 0xFFFFFF } )
+						new THREE.MeshBasicMaterial( { color: 0xfc7db4 } )
 				);
+				player2 = new THREE.Mesh(
+						new THREE.BoxGeometry( 30, 30, 30 ),
+						new THREE.MeshBasicMaterial( { color: 0x90324e } )
+				);
+				scene.add( player2 );
 				scene.add( player );
 
 				socket.emit('init', {
@@ -120,12 +126,23 @@
 				window.addEventListener( 'resize', onWindowResize );
 				window.addEventListener( 'keydown', ( event ) => {
 					move(player);
-				} );
+				});
 			}
 
 			function move(object){
 				object.position.x += 3;
 				updateSocket(object);
+			}
+
+			function remoteData(){
+				// console.log("remote !");
+				if(dataArray.length > 0){
+					for(let data of dataArray){
+						if(playerId != data.id){
+							player2.position.set(data.x, data.y, data.z )
+						}
+					}
+				}
 			}
 
 			function updateSocket(object){
@@ -151,10 +168,15 @@
 
 			function animate() {
 				socket.on('setId', function(data){
+					playerId = data.id
 					console.log( data.id );
 				});
 				socket.on('remoteData', function(data){
-					console.log( data );
+					// if(data != undefined && data.id != playerId ){
+						// remoteData(data);
+					// }
+					dataArray = data;
+					remoteData();
 				});
 
 				socket.on('userData', function(userData){
