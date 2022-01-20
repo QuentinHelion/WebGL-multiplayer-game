@@ -1,75 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>Blockland - a multi-player game</title>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<meta name="description" content="Blockland is a multi-player game. Using the Three.js library. author:Nik Lever ©2018 category:application-javascript" />
-		<meta property="og:url" content="http://niksgames.com/blockland" />
-		<meta property="og:type" content="product" />
-		<meta property="og:title" content="Blockland - a multi-player game" />
-		<meta property="og:description" content="Blockland is a multi-player game. Using the Three.js library. author:Nik Lever ©2018 category:application-javascript" />
-		<meta property="og:image" content="http://niksgames.com/blockland/assets/blockland-og.jpg" />
-		<meta property="og:image:type" content="image/jpeg" />
-		<meta property="og:image:width" content="1265" />
-		<meta property="og:image:height" content="817" />
-		<meta property="og:image:alt" content="Blockland - a multi-player game" />
-		<meta property='og:video' content='https://www.youtube.com/v/1r9V_JEEMlA' />
-		<link href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans|Kavivanar" rel="stylesheet">
-		<style>
-			body {
-				font-family: Monospace;
-				background-color: #000;
-				color: #fff;
-				margin: 0px;
-				overflow: hidden;
-			}
-			#message{
-				position:absolute;
-				left: 50%;
-				top: 50%;
-				transform: translateX(-50%) translateY(-50%);
-				font-family: 'Kavivanar', san-serif;
-				font-size: 40px;
-				width:80%;
-				max-width:280px;
-				padding: 15px 15px 50px 15px;
-				text-align: center;
-				display:none;
-				align-content: center;
-				justify-content: center;
-				background-color: aliceblue;
-				border: medium solid #3D455C;
-				border-radius: 20px;
-				color: #3D455C;
-				z-index: 99;
-			}
-			#message_ok{
-				position: absolute;
-				bottom: 10px;
-				padding: 10px 20px 10px 20px;
-				font-family: sans-serif;
-				font-size: 20px;
-				background-color: #3D455C;
-				color: #fff;
-				border-radius: 8px;
-				border: medium solid #696882;
-			}
-			#chat{
-				position: absolute;
-				width: 100%;
-				height: 40px;
-				bottom: -40px;
-				transition: all 0.5s;
-			}
-			form { background: #000; padding: 3px; width: 100%; }
-      		form input { border: 0; padding: 10px; width: 88%; margin-right: .5%; }
-      		form button { width: 8%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-		</style>
+		<head>
+			<title>Trésor</title>
+			<meta charset="utf-8">
+			<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+			<link type="text/css" rel="stylesheet" href="main.css">
+			<script src="/socket.io/socket.io.js"></script>
+		</head>
 	</head>
-
 	<body>
-		<div id="message">
+		<!-- <div id="message">
 			<p id="message_text"></p>
 			<button id="message_ok">OK</button>
 		</div>
@@ -77,20 +18,164 @@
 			<form id="msg-form" action="">
       			<input id="m" autocomplete="off" /><button>Send</button>
     		</form>
-		</div>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/92/three.min.js"></script>
-		<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
-		<script src="/socket.io/socket.io.js"></script>
+		</div> -->
+		<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/92/three.min.js"></script> -->
+		<!-- <script src="https://code.jquery.com/jquery-1.11.1.js"></script> -->
+		<!-- <script src="/socket.io/socket.io.js"></script> -->
 
 		<!-- <script src= "libs/inflate.min.js"></script> -->
-		<script src="FBXLoader.js"></script>
+		<!-- <script src="FBXLoader.js"></script> -->
 		<!-- <script src="jsm/controls/OrbitControls.js"></script> -->
-		<script src="Detector.js"></script>
+		<!-- <script src="Detector.js"></script> -->
 		<!-- <script src="libs/toon3d.js"></script> -->
-		<script src="multi.js"></script>
-		<script>
+		<!-- <script src="multi.js"></script> -->
+		<!-- <script>
 			var game;
 			document.addEventListener("DOMContentLoaded", function(){ game = new Game(); });
+		</script> -->
+		<script type="module">
+
+			// ============== IMPORTS ==============
+			import * as THREE from './build/three.module.js'; // Element threejs
+			import { OrbitControls } from './jsm/controls/OrbitControls.js'; // Controle de la caméra
+			import Stats from './jsm/libs/stats.module.js'; // Affichage des stats de la page
+
+			// container;
+			let player;
+			// cameras;
+			let stats;
+			let controls;
+			let camera;
+			let scene;
+			let renderer;
+			// animations = {};
+			// assetsPath = 'assets/';
+
+			let remotePlayers = [];
+			let remoteColliders = [];
+			let initialisingPlayers = [];
+			let remoteData = [];
+
+			let clock = new THREE.Clock();
+			const socket = io.connect("localhost:3000");
+
+			// ============== APPEL FONCTIONS ==============
+			init();
+			animate();
+			console.log(socket);
+
+
+			function init() {
+
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0x6e7bbb );
+
+				// ============= AFFICHAGE STATS =============
+				stats = new Stats(); // création stats
+				document.body.appendChild( stats.dom ); // ajout des stats a la scene
+
+				// ============== RENDER ==============
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.shadowMap.enabled = true; // ombre activer
+				renderer.shadowMap.type = THREE.PCFSoftShadowMap; // type d'encoding pour les ombres
+				document.body.appendChild( renderer.domElement );
+
+				player = new THREE.Mesh(
+						new THREE.BoxGeometry( 30, 30, 30 ),
+						new THREE.MeshBasicMaterial( { color: 0xFFFFFF } )
+				);
+				scene.add( player );
+
+				socket.emit('init', {
+					// model: model,
+					// colour: this.colour,
+					x: player.position.x,
+					y: player.position.y,
+					z: player.position.z,
+					h: player.rotation.y,
+					// pb: this.object.rotation.x
+				});
+
+				const sol = new THREE.Mesh(
+						new THREE.BoxGeometry( 8000, 5, 8000 ),
+						new THREE.MeshBasicMaterial( { color: 0x363b5c } )
+				);
+				sol.receiveShadow = true;
+				sol.position.set(3500, -60, 3500);
+				scene.add( sol );
+
+
+				// ============= CAMERA =============
+				camera = new THREE.PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 1, 1500 );
+				camera.position.set(0,120,250);
+				camera.lookAt(0, 30, 0); // cordonnées du point regarder par la camera
+				controls = new OrbitControls( camera, renderer.domElement ); // Faire bouger la caméra avec la souris
+				controls.minDistance = 150; // distance min
+				controls.maxDistance = 300; // distance max
+				controls.maxPolarAngle = Math.PI / 2.3; // angle max de la caméra
+
+				// ============ EVENT LISTENER ============
+				window.addEventListener( 'resize', onWindowResize );
+				window.addEventListener( 'keydown', ( event ) => {
+					move(player);
+				} );
+			}
+
+			function move(object){
+				object.position.x += 3;
+				updateSocket(object);
+			}
+
+			function updateSocket(object){
+				// if (this.socket !== undefined){
+					//console.log(`PlayerLocal.updateSocket - rotation(${this.object.rotation.x.toFixed(1)},${this.object.rotation.y.toFixed(1)},${this.object.rotation.z.toFixed(1)})`);
+					socket.emit('update', {
+						x: object.position.x,
+						y: object.position.y,
+						z: object.position.z,
+						h: object.rotation.y,
+						// pb: this.object.rotation.x,
+						// action: this.action
+					})
+				// }
+			}
+
+			// ===== WINDOW REZISE =====
+			function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
+
+			function animate() {
+				socket.on('setId', function(data){
+					console.log( data.id );
+				});
+				socket.on('remoteData', function(data){
+					console.log( data );
+				});
+
+				socket.on('userData', function(userData){
+					// console.log(userData.x);
+					player.position.set(userData.x, userData.y,userData.z);
+				});
+
+				// updateSocket(player);
+				// const game = this;
+				// const dt = clock.getDelta();
+
+				// requestAnimationFrame( function(){ game.animate(); } );
+				// updateRemotePlayers(dt);
+				//
+				// if (player.motion !== undefined) player.move(dt);
+				//
+				// if (speechBubble!==undefined) speechBubble.show(camera.position);
+				window.requestAnimationFrame( animate ); // animation de la page
+				stats.update();
+				renderer.render( scene, camera );
+			}
 		</script>
 	</body>
 </html>
