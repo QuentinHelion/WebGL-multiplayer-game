@@ -28,18 +28,23 @@
 			// ============== VARIABLES ===============
 			let stats,gui,controls;
 			let camera, scene, renderer;
-			let player, player2, playerId;
+			let player, player2, playerId,playerShoot, playerShootBuffer, playerTouch, playerTouchBuffer;
 			let objChampi;
 			let pointLight, spotLightHelper;
 			let playerOnFloor = false;
+			let sphereIdx = 0;
 
 			// ============== CONSTANTES ==============
 			const playerVelocity = new THREE.Vector3();
 			const playerDirection = new THREE.Vector3();
 			const playerCollider = new Capsule( new THREE.Vector3( 0, 0.35, 0 ), new THREE.Vector3( 0, 1, 0 ), 0.35 );
 			const clock = new THREE.Clock();
-			const socket = io.connect("localhost:3000");
+			const socket = io.connect("localhost:2600");
 			const worldOctree = new Octree();
+			const spheres = [];
+			const vector1 = new THREE.Vector3();
+			const vector2 = new THREE.Vector3();
+			const vector3 = new THREE.Vector3();
 
 			// ============== TABLEAUX ===============
 			const keyStates = {};
@@ -50,6 +55,8 @@
 			// ============== PARAMETRES ===============
 			const STEPS_PER_FRAME = 5;
 			const GRAVITY = 30;
+			const NUM_SPHERES = 1;
+			const SPHERE_RADIUS = 4;
 
 			// =============== EVENT LISTENER ===============
 			document.addEventListener( 'keydown', ( event ) => {
@@ -58,6 +65,10 @@
 
 			document.addEventListener( 'keyup', ( event ) => {
 				keyStates[ event.code ] = false;
+			} );
+
+			document.addEventListener( 'mouseup', () => {
+				throwBall();
 			} );
 
 			// ============== APPEL FONCTIONS ==============
@@ -98,22 +109,16 @@
 				// scene.add(pointLight);
 
 
-				// player = new THREE.Mesh(
-				// 		new THREE.BoxGeometry( 30, 30, 30 ),
-				// 		new THREE.MeshBasicMaterial( { color: 0xfc7db4 } )
-				// );
-				// player2 = new THREE.Mesh(
-				// 		new THREE.BoxGeometry( 30, 30, 30 ),
-				// 		new THREE.MeshBasicMaterial( { color: 0x90324e } )
-				// );
-				// scene.add( player2 );
-				// scene.add( player );
+				const sphereGeometry = new THREE.SphereGeometry( SPHERE_RADIUS, 32, 32 );
+				const sphereMaterial = new THREE.MeshStandardMaterial( { color: 0x888855, roughness: 0.8, metalness: 0.5 } );
+				for ( let i = 0; i < NUM_SPHERES; i ++ ) {
+					const sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
+					sphere.castShadow = true;
+					sphere.receiveShadow = true;
+					scene.add( sphere );
+					spheres.push( { mesh: sphere, collider: new THREE.Sphere( new THREE.Vector3( 0, - 100, 0 ), SPHERE_RADIUS ), velocity: new THREE.Vector3() } );
+				}
 
-				// player = createPerso();
-				// player2 = createPerso();
-				//
-				// scene.add( player2 );
-				// scene.add( player );
 
 				createPerso();
 				createPerso2();
@@ -270,32 +275,34 @@
 			function control( deltaTime ) {
 				const speedDelta = deltaTime * ( playerOnFloor ? 350 : 90 );
 				// console.log(keyStates);
-				if ( keyStates[ 'KeyW' ] ) {
-					playerVelocity.add( getForwardVector().multiplyScalar( speedDelta ) );
-				}
-
-				if ( keyStates[ 'KeyS' ] ) {
-					playerVelocity.add( getForwardVector().multiplyScalar( - speedDelta ) );
-				}
-
-				if ( keyStates[ 'KeyA' ] ) {
-					playerVelocity.add( getSideVector().multiplyScalar( - speedDelta ) );
-				}
-
-				if ( keyStates[ 'KeyD' ] ) {
-					playerVelocity.add( getSideVector().multiplyScalar( speedDelta ) );
-				}
-
-				if ( playerOnFloor ) {
-					if ( keyStates[ 'Space' ] ) {
-						playerVelocity.y = 70;
+				if(!playerTouch){
+					if ( keyStates[ 'KeyW' ] ) {
+						playerVelocity.add( getForwardVector().multiplyScalar( speedDelta ) );
 					}
-				}
-				if ( keyStates[ 'KeyQ' ] ) {
-					player.rotation.y += 0.03;
-				}
-				if ( keyStates[ 'KeyE' ] ) {
-					player.rotation.y -= 0.03;
+
+					if ( keyStates[ 'KeyS' ] ) {
+						playerVelocity.add( getForwardVector().multiplyScalar( - speedDelta ) );
+					}
+
+					if ( keyStates[ 'KeyA' ] ) {
+						playerVelocity.add( getSideVector().multiplyScalar( - speedDelta ) );
+					}
+
+					if ( keyStates[ 'KeyD' ] ) {
+						playerVelocity.add( getSideVector().multiplyScalar( speedDelta ) );
+					}
+
+					if ( playerOnFloor ) {
+						if ( keyStates[ 'Space' ] ) {
+							playerVelocity.y = 70;
+						}
+					}
+					if ( keyStates[ 'KeyQ' ] ) {
+						player.rotation.y += 0.03;
+					}
+					if ( keyStates[ 'KeyE' ] ) {
+						player.rotation.y -= 0.03;
+					}
 				}
 			}
 
@@ -353,6 +360,85 @@
 				}
 			}
 
+			function throwBall() {
+				const sphere = spheres[ sphereIdx ];
+				player.getWorldDirection( playerDirection );
+				sphere.collider.center.copy( playerCollider.end ).addScaledVector( playerDirection, playerCollider.radius * 1.5 );
+				const impulse = 150 + 30;// * ( 1 - Math.exp( ( mouseTime - performance.now() ) * 0.001 ) );
+				sphere.velocity.copy( playerDirection ).multiplyScalar( impulse );
+				sphere.velocity.addScaledVector( playerVelocity, 2 );
+				sphereIdx = ( sphereIdx + 1 ) % spheres.length;
+				console.log('shot');
+			}
+
+			// function playerSphereCollision( sphere ) {
+			// 	const center = vector1.addVectors( playerCollider.start, playerCollider.end ).multiplyScalar( 0.5 );
+			// 	const sphere_center = sphere.collider.center;
+			// 	const r = playerCollider.radius + sphere.collider.radius;
+			// 	const r2 = r * r;
+			// 	// approximation: player = 3 spheres
+			// 	for ( const point of [ playerCollider.start, playerCollider.end, center ] ) {
+			// 		const d2 = point.distanceToSquared( sphere_center );
+			// 		if ( d2 < r2 ) {
+			// 			const normal = vector1.subVectors( point, sphere_center ).normalize();
+			// 			const v1 = vector2.copy( normal ).multiplyScalar( normal.dot( playerVelocity ) );
+			// 			const v2 = vector3.copy( normal ).multiplyScalar( normal.dot( sphere.velocity ) );
+			// 			playerVelocity.add( v2 ).sub( v1 );
+			// 			sphere.velocity.add( v1 ).sub( v2 );
+			// 			const d = ( r - Math.sqrt( d2 ) ) / 2;
+			// 			sphere_center.addScaledVector( normal, - d );
+			// 		}
+			// 	}
+			// }
+
+			function spheresCollisions() {
+				for ( let i = 0, length = spheres.length; i < length; i ++ ) {
+					const s1 = spheres[ i ];
+				// 	for ( let j = i + 1; j < length; j ++ ) {
+				// 		const s2 = spheres[ j ];
+				// 		const d2 = s1.collider.center.distanceToSquared( s2.collider.center );
+				// 		const r = s1.collider.radius + s2.collider.radius;
+				// 		const r2 = r * r;
+				// 		if ( d2 < r2 ) {
+				// 			const normal = vector1.subVectors( s1.collider.center, s2.collider.center ).normalize();
+				// 			const v1 = vector2.copy( normal ).multiplyScalar( normal.dot( s1.velocity ) );
+				// 			const v2 = vector3.copy( normal ).multiplyScalar( normal.dot( s2.velocity ) );
+				// 			s1.velocity.add( v2 ).sub( v1 );
+				// 			s2.velocity.add( v1 ).sub( v2 );
+				// 			const d = ( r - Math.sqrt( d2 ) ) / 2;
+				// 			s1.collider.center.addScaledVector( normal, d );
+				// 			s2.collider.center.addScaledVector( normal, - d );
+				// 		}
+				// 	}
+					const d3 = s1.collider.center.distanceToSquared( player2.position );
+					if(d3 < 70){
+						playerShoot = true;
+					} else {
+						playerShoot = false;
+					}
+
+				}
+			}
+
+			function updateSpheres( deltaTime ) {
+				spheres.forEach( sphere => {
+					sphere.collider.center.addScaledVector( sphere.velocity, deltaTime );
+					const result = worldOctree.sphereIntersect( sphere.collider );
+					if ( result ) {
+						sphere.velocity.addScaledVector( result.normal, - result.normal.dot( sphere.velocity ) * 1.5 );
+						sphere.collider.center.add( result.normal.multiplyScalar( result.depth ) );
+					} else {
+						sphere.velocity.y -= GRAVITY * deltaTime;
+					}
+					// const damping = Math.exp( - 1.5 * deltaTime ) - 1;
+					// sphere.velocity.addScaledVector( sphere.velocity, damping );
+					// playerSphereCollision( sphere );
+				} );
+				spheresCollisions();
+				for ( const sphere of spheres ) {
+					sphere.mesh.position.copy( sphere.collider.center );
+				}
+			}
 
 
 
@@ -362,8 +448,13 @@
 				if(dataArray.length > 0){
 					for(let data of dataArray){
 						if(playerId != data.id){
-							player2.position.set(data.x, data.y, data.z )
+							player2.position.set(data.x, data.y, data.z );
 						}
+						// if(playerId == data.id && data.touch && !playerShootBuffer){
+						// 	console.log("bloquer");
+						// 	playerShoot = true;
+						// 	playerShootBuffer = parseInt(clock["oldTime"]);
+						// }
 					}
 				}
 			}
@@ -391,6 +482,7 @@
 					control( deltaTime );
 					updatePlayer( deltaTime );
 					// updateLight();
+					updateSpheres( deltaTime );
 					teleportPlayerIfOob();
 				}
 
@@ -399,13 +491,36 @@
 
 				// ========= MULTIPLAYER PART =========
 				socket.on('setId', function(data){
-					playerId = data.id
+					playerId = data.id;
 					// console.log( data.id );
 				});
 				socket.on('remoteData', function(data){
 					dataArray = data;
 					remoteData();
 				});
+
+				if(playerShoot != playerShootBuffer){
+					// playerShootBuffer = playerShoot;
+					if(playerShoot){
+						console.log('touch');
+						socket.emit('touchPlayer', playerId);
+					}
+				}
+
+				socket.on('touchPlayer', function(data){
+					playerTouch = true;
+					playerTouchBuffer = parseInt(clock["oldTime"]);
+					// console.log('t')
+				});
+
+				if(parseInt(clock["oldTime"]) - playerTouchBuffer >= 5000 && playerTouchBuffer){
+					playerTouch = false;
+					playerTouchBuffer = undefined;
+				}
+
+
+
+
 
 				// socket.on('userData', function(userData){
 				// 	// console.log(userData.x);

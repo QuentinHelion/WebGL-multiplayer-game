@@ -4,6 +4,7 @@ const http = require('http').Server(app);
 const io = require('socket.io')(http);
 
 let playerArray = new Array();
+let shooter;
 
 app.use(express.static('./'));
 app.get('/',function(req, res) {
@@ -56,10 +57,25 @@ io.sockets.on('connection', function(socket){
 	// 	console.log(`chat message:${data.id} ${data.message}`);
 	// 	io.to(data.id).emit('chat message', { id: socket.id, message: data.message });
 	// })
+
+  socket.on('touchPlayer',function(data){
+    // shooter = data;
+    const nsp = io.of('/');
+    for(let id in io.sockets.sockets){
+      const socket = nsp.connected[id];
+      if(socket.id != data){
+        io.emit('touchPlayer', true);
+      }
+      // socket.id == shooter ? false : true
+    }
+    console.log(data+" as shoot");
+  });
+
+
 });
 
-http.listen(3000, function(){
-  console.log('listening on -p 3000 - origin set');
+http.listen(2600, function(){
+  console.log('listening on -p 2600 - origin set');
 });
 
 setInterval(function(){
@@ -68,25 +84,24 @@ setInterval(function(){
 
   for(let id in io.sockets.sockets){
     const socket = nsp.connected[id];
-      // console.log(socket.id);
-	 	  // Only push sockets that have been initialised
 		if(socket.id != undefined){
 			pack.push({
 				id: socket.id,
-				// model: socket.userData.model,
-				// colour: socket.userData.colour,
 				x: socket.userData.x,
 				y: socket.userData.y,
 				z: socket.userData.z,
 				heading: socket.userData.heading,
 				// pb: socket.userData.pb,
 				// action: socket.userData.action
+        // touch: socket.id == shooter ? false : true
 			});
 		}
+    // if(socket.id != )
   }
 	if (pack.length>0) {
     io.emit('remoteData', pack);
     // console.log(pack);
     // console.log('emit remoteData');
   }
+
 }, 40);
