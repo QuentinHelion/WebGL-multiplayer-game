@@ -138,30 +138,48 @@
 				// scene.add( player2Ball );
 
 				const loaderGLB = new GLTFLoader().setPath( 'models/' );
-				loaderGLB.load( 'labyCave.glb', function ( obj ) {
-					obj.scene.position.z = -20;
-					// obj.scene.material.side = THREE.DoubleSide;
-					obj.scene.traverse( function ( child ) {
-						if ( child.isMesh ) {
-							child.material = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide } );
-							// child.castShadow = true;
-							// child.receiveShadow = true;
-							// worldOctree.fromGraphNode( child );
-						}
-					} );
-					// scene.add( obj.scene );
-					// worldOctree.fromGraphNode( obj.scene );
+				loaderGLB.load( 'labyCave.gltf', function ( obj ) {
+					obj.scene.position.z = 150;
+					obj.scene.scale.multiplyScalar(-1);
+					scene.add( obj.scene );
+					worldOctree.fromGraphNode( obj.scene );
 				});
-				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-				// camera = new THREE.PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 1, 1500 );
+				// const loaderGLB = new GLTFLoader().setPath( 'models/' );
+
+				//
+				// const loaderFBX = new FBXLoader().setPath( 'models/' ); // emplacement des fichiers
+				// loaderFBX.load( 'labyCave.fbx', function ( obj ) {
+				// 	// obj.traverse( function ( child ) {
+				// 	// 	if ( child.isMesh ) {
+				// 	// 		child.castShadow = true;
+				// 	// 		child.receiveShadow = true;
+				// 	// 	}
+				// 	// } );
+				// 	// obj.rotation.y = 180;
+				// 	scene.add( obj );
+				// 	// worldOctree.fromGraphNode( obj );
+				// });
+
+				// const caveOBJ = new OBJLoader(); // new obj
+				// caveOBJ.load('models/labyCave.obj', (obj) => { // charge l'objet
+				// 	// obj.position.set(0,40,0); // x, z, y
+				// 	// obj.traverse( function ( child ) {
+				// 	// 	if ( child instanceof THREE.Mesh ) {
+				// 	// 		child.receiveShadow = true;
+				// 	// 		child.castShadow = true;
+				// 	// 	}
+				// 	// });
+				// 	scene.add(obj); // ajout de l'obj à la scène
+				// });
+
+
+
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 10000 );
 				camera.rotation.order = 'YXZ';
 
 				createPerso();
 				createPerso2();
 
-				// console.log(playerArray);
-
-				// player = playerArray[0];
 				player = new THREE.Mesh(
 					new THREE.BoxGeometry( 5, 5, 5 ),
 					new THREE.MeshBasicMaterial( { color: 0xFFFFFF } )
@@ -172,10 +190,6 @@
 					new THREE.BoxGeometry( 5, 5, 5 ),
 					new THREE.MeshBasicMaterial( { color: 0xFFFFFF } )
 				);
-
-				// console.log(player2);
-
-				// player2 = createPerso();
 
 				console.log( spheres[0].velocity );
 				socket.emit('init', {
@@ -201,20 +215,8 @@
 				scene.add( sol );
 				worldOctree.fromGraphNode( sol );
 
-				// ============= CAMERA =============
-				// camera = new THREE.PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 1, 1500 );
-				// camera.position.set(0,120,250);
-				// camera.lookAt(0, 30, 0); // cordonnées du point regarder par la camera
-				// controls = new OrbitControls( camera, renderer.domElement ); // Faire bouger la caméra avec la souris
-				// controls.minDistance = 150; // distance min
-				// controls.maxDistance = 300; // distance max
-				// controls.maxPolarAngle = Math.PI / 2.3; // angle max de la caméra
-
 				// ============ EVENT LISTENER ============
 				window.addEventListener( 'resize', onWindowResize );
-				// window.addEventListener( 'keydown', ( event ) => {
-				// 	move(player);
-				// });
 			}
 
 			// ================= FONCTIONS UTILES =================
@@ -236,9 +238,11 @@
 							child.receiveShadow = true;
 						}
 					} );
+					// obj.rotation.y = 180;
 					obj.position.x = camera.position.x;
-					obj.position.y  = camera.position.y;
+					obj.position.y  = camera.position.y + 40;
 					obj.position.z = camera.position.z;
+					camera.rotation.y = 180;
 					// obj.getWorldDirection( playerDirection );
 					// obj.position.set(0, 100, 0);
 					// obj.add(pointLight);
