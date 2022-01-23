@@ -33,6 +33,7 @@
 			let pointLight, spotLightHelper;
 			let playerOnFloor = false;
 			let sphereIdx = 0;
+			let player2Ball;
 
 			// ============== CONSTANTES ==============
 			const playerVelocity = new THREE.Vector3();
@@ -55,7 +56,7 @@
 			// ============== PARAMETRES ===============
 			const STEPS_PER_FRAME = 5;
 			const GRAVITY = 30;
-			const NUM_SPHERES = 1;
+			const NUM_SPHERES = 2;
 			const SPHERE_RADIUS = 4;
 
 			// =============== EVENT LISTENER ===============
@@ -70,6 +71,17 @@
 			document.addEventListener( 'mouseup', () => {
 				throwBall();
 			} );
+
+			document.addEventListener( 'mousedown', () => {
+				document.body.requestPointerLock();
+			} );
+
+			document.body.addEventListener( 'mousemove', ( event ) => {
+				if ( document.pointerLockElement === document.body ) {
+					camera.rotation.y -= event.movementX / 500;
+					camera.rotation.x -= event.movementY / 500;
+				}
+			});
 
 			// ============== APPEL FONCTIONS ==============
 			init();
@@ -115,17 +127,41 @@
 					const sphere = new THREE.Mesh( sphereGeometry, sphereMaterial );
 					sphere.castShadow = true;
 					sphere.receiveShadow = true;
+					sphere.position.set( 0, 0, 0 );
 					scene.add( sphere );
 					spheres.push( { mesh: sphere, collider: new THREE.Sphere( new THREE.Vector3( 0, - 100, 0 ), SPHERE_RADIUS ), velocity: new THREE.Vector3() } );
 				}
 
+				// player2Ball = new THREE.Mesh( sphereGeometry, sphereMaterial );
+				// player2Ball.castShadow = true;
+				// player2Ball.receiveShadow = true;
+				// scene.add( player2Ball );
+
+				const loaderGLB = new GLTFLoader().setPath( 'models/' );
+				loaderGLB.load( 'labyCave.glb', function ( obj ) {
+					obj.scene.position.z = -20;
+					// obj.scene.material.side = THREE.DoubleSide;
+					obj.scene.traverse( function ( child ) {
+						if ( child.isMesh ) {
+							child.material = new THREE.MeshBasicMaterial( { side: THREE.DoubleSide } );
+							// child.castShadow = true;
+							// child.receiveShadow = true;
+							// worldOctree.fromGraphNode( child );
+						}
+					} );
+					// scene.add( obj.scene );
+					// worldOctree.fromGraphNode( obj.scene );
+				});
+				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+				// camera = new THREE.PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 1, 1500 );
+				camera.rotation.order = 'YXZ';
 
 				createPerso();
 				createPerso2();
 
-				console.log(playerArray);
+				// console.log(playerArray);
 
-				player = playerArray[0];
+				// player = playerArray[0];
 				player = new THREE.Mesh(
 					new THREE.BoxGeometry( 5, 5, 5 ),
 					new THREE.MeshBasicMaterial( { color: 0xFFFFFF } )
@@ -137,10 +173,11 @@
 					new THREE.MeshBasicMaterial( { color: 0xFFFFFF } )
 				);
 
-				console.log(player2);
+				// console.log(player2);
 
 				// player2 = createPerso();
 
+				console.log( spheres[0].velocity );
 				socket.emit('init', {
 					// model: model,
 					// colour: this.colour,
@@ -148,6 +185,10 @@
 					y: player.position.y,
 					z: player.position.z,
 					h: player.rotation.y,
+					// b: spheres[0].velocity,
+					// bx: spheres[0].velocity.x,
+					// by: spheres[0].velocity.y,
+					// bz: spheres[0].velocity.z
 					// pb: this.object.rotation.x
 				});
 
@@ -161,13 +202,13 @@
 				worldOctree.fromGraphNode( sol );
 
 				// ============= CAMERA =============
-				camera = new THREE.PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 1, 1500 );
-				camera.position.set(0,120,250);
-				camera.lookAt(0, 30, 0); // cordonnées du point regarder par la camera
-				controls = new OrbitControls( camera, renderer.domElement ); // Faire bouger la caméra avec la souris
-				controls.minDistance = 150; // distance min
-				controls.maxDistance = 300; // distance max
-				controls.maxPolarAngle = Math.PI / 2.3; // angle max de la caméra
+				// camera = new THREE.PerspectiveCamera( 80, window.innerWidth / window.innerHeight, 1, 1500 );
+				// camera.position.set(0,120,250);
+				// camera.lookAt(0, 30, 0); // cordonnées du point regarder par la camera
+				// controls = new OrbitControls( camera, renderer.domElement ); // Faire bouger la caméra avec la souris
+				// controls.minDistance = 150; // distance min
+				// controls.maxDistance = 300; // distance max
+				// controls.maxPolarAngle = Math.PI / 2.3; // angle max de la caméra
 
 				// ============ EVENT LISTENER ============
 				window.addEventListener( 'resize', onWindowResize );
@@ -195,12 +236,16 @@
 							child.receiveShadow = true;
 						}
 					} );
+					obj.position.x = camera.position.x;
+					obj.position.y  = camera.position.y;
+					obj.position.z = camera.position.z;
 					// obj.getWorldDirection( playerDirection );
 					// obj.position.set(0, 100, 0);
-					obj.add(pointLight);
-					scene.add( obj );
+					// obj.add(pointLight);
+					camera.add( obj );
+					// scene.add( obj );
 					// return obj;/
-					player = obj;
+					player = camera;
 					// playerArray.push(obj);
 				});
 				console.log('createPerso end');
@@ -348,7 +393,7 @@
 				playerCollider.translate( deltaPosition );
 				playerCollisions();
 				player.position.copy( playerCollider.end );
-				updateSocket(player);
+				// updateSocket(player);
 			}
 
 			function teleportPlayerIfOob(){
@@ -361,15 +406,17 @@
 			}
 
 			function throwBall() {
-				const sphere = spheres[ sphereIdx ];
+				const sphere = spheres[ 0 ];
 				player.getWorldDirection( playerDirection );
 				sphere.collider.center.copy( playerCollider.end ).addScaledVector( playerDirection, playerCollider.radius * 1.5 );
 				const impulse = 150 + 30;// * ( 1 - Math.exp( ( mouseTime - performance.now() ) * 0.001 ) );
 				sphere.velocity.copy( playerDirection ).multiplyScalar( impulse );
 				sphere.velocity.addScaledVector( playerVelocity, 2 );
-				sphereIdx = ( sphereIdx + 1 ) % spheres.length;
+				// sphereIdx = ( sphereIdx + 1 ) % spheres.length;
 				console.log('shot');
+				socket.emit('ballShoot', {data: spheres[0].velocity, id: playerId});
 			}
+
 
 			// function playerSphereCollision( sphere ) {
 			// 	const center = vector1.addVectors( playerCollider.start, playerCollider.end ).multiplyScalar( 0.5 );
@@ -438,6 +485,7 @@
 				for ( const sphere of spheres ) {
 					sphere.mesh.position.copy( sphere.collider.center );
 				}
+				// updateSocket(player);
 			}
 
 
@@ -449,6 +497,16 @@
 					for(let data of dataArray){
 						if(playerId != data.id){
 							player2.position.set(data.x, data.y, data.z );
+							player2.rotation.y = data.h;
+
+							// player2Ball.position.set(data.b)
+							// spheres[1].velocity.x =  data.bx;
+							// spheres[1].velocity.y =  data.by;
+							// spheres[1].velocity.z =  data.bz;
+
+							// console.log(spheres[1].velocity);
+
+							// console.log(data.b);
 						}
 						// if(playerId == data.id && data.touch && !playerShootBuffer){
 						// 	console.log("bloquer");
@@ -467,9 +525,14 @@
 						y: object.position.y,
 						z: object.position.z,
 						h: object.rotation.y,
+						// b: spheres[0].velocity,
+						// bx: spheres[0].velocity.x,
+						// by: spheres[0].velocity.y,
+						// bz: spheres[0].velocity.z
 						// pb: this.object.rotation.x,
 						// action: this.action
 					})
+					// console.log(spheres[0].velocity.y);
 				// }
 			}
 
@@ -481,6 +544,7 @@
 				for ( let i = 0; i < STEPS_PER_FRAME; i ++ ) {
 					control( deltaTime );
 					updatePlayer( deltaTime );
+					updateSocket( player );
 					// updateLight();
 					updateSpheres( deltaTime );
 					teleportPlayerIfOob();
@@ -518,6 +582,13 @@
 					playerTouchBuffer = undefined;
 				}
 
+				socket.on('ballShoot', function(data){
+					spheres[1].velocity.copy(data);
+					// console.log(spheres[1].velocity);
+				});
+
+
+				// console.log(spheres[0].position);
 
 
 

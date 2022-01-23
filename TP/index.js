@@ -16,7 +16,7 @@ console.log('starting...');
 
 io.sockets.on('connection', function(socket){
   console.log('connection');
-	socket.userData = { x:0, y:0, z:0, heading:0 };//Default values;
+	socket.userData = { x:0, y:0, z:0, h:0 };//Default values;
   console.log(socket.userData);
   // if(!playerArray.includes(socket.id) && playerArray.length > 0){
   //   playerArray.push(socket.id);
@@ -38,7 +38,11 @@ io.sockets.on('connection', function(socket){
 		socket.userData.x = data.x;
 		socket.userData.y = data.y;
 		socket.userData.z = data.z;
-		socket.userData.heading = data.h;
+		socket.userData.h = data.h;
+    // socket.userData.b = data.b;
+    // socket.userData.bx = data.bx; // balls position x
+    // socket.userData.by = data.by; // balls position y
+    // socket.userData.bz = data.bz; // balls position z
 		// socket.userData.pb = data.pb,
 		// socket.userData.action = "Idle";
 	});
@@ -47,11 +51,25 @@ io.sockets.on('connection', function(socket){
 		socket.userData.x = data.x;
 		socket.userData.y = data.y;
 		socket.userData.z = data.z;
-		socket.userData.heading = data.h;
+		socket.userData.h = data.h;
+    // socket.userData.b = data.b;
+    // socket.userData.bx = data.bx; // balls position x
+    // socket.userData.by = data.by; // balls position y
+    // socket.userData.bz = data.bz; // balls position z
     // console.log("x: "+data.x);
 		// socket.userData.pb = data.pb,
 		// socket.userData.action = data.action;
 	});
+
+  socket.on('ballShoot',function(data){
+    const nsp = io.of('/');
+    for(let id in io.sockets.sockets){
+      const socket = nsp.connected[id];
+  		if(socket.id != data.id){
+        socket.emit('ballShoot', data.data);
+  		}
+  }
+})
 
 	// socket.on('chat message', function(data){
 	// 	console.log(`chat message:${data.id} ${data.message}`);
@@ -90,7 +108,11 @@ setInterval(function(){
 				x: socket.userData.x,
 				y: socket.userData.y,
 				z: socket.userData.z,
-				heading: socket.userData.heading,
+				h: socket.userData.h,
+        // b: socket.userData.b,
+        // bx: socket.userData.bx, // balls position x
+        // by: socket.userData.by, // balls position y
+        // bz: socket.userData.bz, // balls position z
 				// pb: socket.userData.pb,
 				// action: socket.userData.action
         // touch: socket.id == shooter ? false : true
