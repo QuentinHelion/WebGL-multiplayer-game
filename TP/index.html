@@ -202,18 +202,11 @@
 						}
 					} );
 					// obj.rotation.y = 180;
-					obj.position.x = camera.position.x;
-					obj.position.y  = camera.position.y + 40;
-					obj.position.z = camera.position.z;
-					camera.rotation.y = 180;
-					// obj.getWorldDirection( playerDirection );
-					// obj.position.set(0, 100, 0);
-					// obj.add(pointLight);
+					obj.position.x = camera.position.x - 400;
+					obj.position.y  = camera.position.y - 400;
+					obj.position.z = camera.position.z - 400;
 					camera.add( obj );
-					// scene.add( obj );
-					// return obj;/
 					player = camera;
-					// playerArray.push(obj);
 				});
 				console.log('createPerso end');
 			}
