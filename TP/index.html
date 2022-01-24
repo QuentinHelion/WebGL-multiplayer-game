@@ -139,40 +139,12 @@
 
 				const loaderGLB = new GLTFLoader().setPath( 'models/' );
 				loaderGLB.load( 'labyCave.gltf', function ( obj ) {
-					obj.scene.position.z = 150;
+					obj.scene.position.y = -20;
+					obj.scene.rotation.z = 6.28;
 					obj.scene.scale.multiplyScalar(-1);
 					scene.add( obj.scene );
 					worldOctree.fromGraphNode( obj.scene );
 				});
-				// const loaderGLB = new GLTFLoader().setPath( 'models/' );
-
-				//
-				// const loaderFBX = new FBXLoader().setPath( 'models/' ); // emplacement des fichiers
-				// loaderFBX.load( 'labyCave.fbx', function ( obj ) {
-				// 	// obj.traverse( function ( child ) {
-				// 	// 	if ( child.isMesh ) {
-				// 	// 		child.castShadow = true;
-				// 	// 		child.receiveShadow = true;
-				// 	// 	}
-				// 	// } );
-				// 	// obj.rotation.y = 180;
-				// 	scene.add( obj );
-				// 	// worldOctree.fromGraphNode( obj );
-				// });
-
-				// const caveOBJ = new OBJLoader(); // new obj
-				// caveOBJ.load('models/labyCave.obj', (obj) => { // charge l'objet
-				// 	// obj.position.set(0,40,0); // x, z, y
-				// 	// obj.traverse( function ( child ) {
-				// 	// 	if ( child instanceof THREE.Mesh ) {
-				// 	// 		child.receiveShadow = true;
-				// 	// 		child.castShadow = true;
-				// 	// 	}
-				// 	// });
-				// 	scene.add(obj); // ajout de l'obj à la scène
-				// });
-
-
 
 				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 10000 );
 				camera.rotation.order = 'YXZ';
@@ -205,15 +177,6 @@
 					// bz: spheres[0].velocity.z
 					// pb: this.object.rotation.x
 				});
-
-				const sol = new THREE.Mesh(
-						new THREE.BoxGeometry( 8000, 5, 8000 ),
-						new THREE.MeshBasicMaterial( { color: 0x363b5c } )
-				);
-				sol.receiveShadow = true;
-				sol.position.set(3500, -60, 3500);
-				scene.add( sol );
-				worldOctree.fromGraphNode( sol );
 
 				// ============ EVENT LISTENER ============
 				window.addEventListener( 'resize', onWindowResize );
