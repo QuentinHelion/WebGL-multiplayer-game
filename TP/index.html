@@ -287,7 +287,7 @@
 			function control( deltaTime ) {
 				const speedDelta = deltaTime * ( playerOnFloor ? 350 : 90 );
 				// console.log(keyStates);
-				if(!playerTouch){
+				if(playerTouchBuffer == undefined){
 					if ( keyStates[ 'KeyW' ] ) {
 						playerVelocity.add( getForwardVector().multiplyScalar( speedDelta ) );
 					}
@@ -408,28 +408,15 @@
 			function spheresCollisions() {
 				for ( let i = 0, length = spheres.length; i < length; i ++ ) {
 					const s1 = spheres[ i ];
-				// 	for ( let j = i + 1; j < length; j ++ ) {
-				// 		const s2 = spheres[ j ];
-				// 		const d2 = s1.collider.center.distanceToSquared( s2.collider.center );
-				// 		const r = s1.collider.radius + s2.collider.radius;
-				// 		const r2 = r * r;
-				// 		if ( d2 < r2 ) {
-				// 			const normal = vector1.subVectors( s1.collider.center, s2.collider.center ).normalize();
-				// 			const v1 = vector2.copy( normal ).multiplyScalar( normal.dot( s1.velocity ) );
-				// 			const v2 = vector3.copy( normal ).multiplyScalar( normal.dot( s2.velocity ) );
-				// 			s1.velocity.add( v2 ).sub( v1 );
-				// 			s2.velocity.add( v1 ).sub( v2 );
-				// 			const d = ( r - Math.sqrt( d2 ) ) / 2;
-				// 			s1.collider.center.addScaledVector( normal, d );
-				// 			s2.collider.center.addScaledVector( normal, - d );
-				// 		}
-				// 	}
 					const d3 = s1.collider.center.distanceToSquared( player2.position );
 					if(d3 < 70){
-						playerShoot = true;
-					} else {
-						playerShoot = false;
+						// console.log('touch !');
+						socket.emit('touchPlayer', playerId);
 					}
+					// 	playerShoot = true;
+					// } else {
+					// 	playerShoot = false;
+					// }
 
 				}
 			}
@@ -530,22 +517,24 @@
 					remoteData();
 				});
 
-				if(playerShoot != playerShootBuffer){
-					// playerShootBuffer = playerShoot;
-					if(playerShoot){
-						console.log('touch');
-						socket.emit('touchPlayer', playerId);
-					}
-				}
+				// if(playerShoot != playerShootBuffer){
+				// 	// playerShootBuffer = playerShoot;
+				// 	if(playerShoot){
+				// 		console.log('touch');
+				// 		socket.emit('touchPlayer', playerId);
+				// 	}
+				// }
 
-				socket.on('touchPlayer', function(data){
-					playerTouch = true;
-					playerTouchBuffer = parseInt(clock["oldTime"]);
-					// console.log('t')
+				socket.on('touchPlayerReponse', function(data){
+					// playerTouch = true;
+					if(playerTouchBuffer == undefined && data != playerId){
+						playerTouchBuffer = parseInt(clock["oldTime"]);
+						console.log('toucher !');
+					}
 				});
 
 				if(parseInt(clock["oldTime"]) - playerTouchBuffer >= 5000 && playerTouchBuffer){
-					playerTouch = false;
+					// playerTouch = false;
 					playerTouchBuffer = undefined;
 				}
 

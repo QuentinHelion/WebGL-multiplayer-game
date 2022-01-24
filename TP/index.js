@@ -82,7 +82,7 @@ io.sockets.on('connection', function(socket){
     for(let id in io.sockets.sockets){
       const socket = nsp.connected[id];
       if(socket.id != data){
-        io.emit('touchPlayer', true);
+        io.emit('touchPlayerReponse', data);
       }
       // socket.id == shooter ? false : true
     }
