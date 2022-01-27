@@ -147,9 +147,10 @@
 					obj.scene.position.y = -30;
 					obj.scene.rotation.z = 6.28;
 					obj.scene.scale.multiplyScalar(-1);
-					scene.add( obj.scene );
-					worldOctree.fromGraphNode( obj.scene );
+					// scene.add( obj.scene );
+					// worldOctree.fromGraphNode( obj.scene );
 				});
+
 				const sol = new THREE.Mesh(
 						new THREE.BoxGeometry( 8000, 5, 8000 ),
 						new THREE.MeshPhongMaterial( { color: 0x363b5c, transparent: true, opacity: 0.8  } )
@@ -206,39 +207,117 @@
 					obj.position.y = player2.position.y - 20;
 					obj.add(pointLight2);
 					player2.add( obj );
-					// player2 = obj;
 				});
 
 				scene.add(player2);
-
-				console.log(player.position);
-				console.log(camera.position);
-				// player.position.y = camera.position.y - 40;
-				// player.position.x = camera.position.x - 80;
-
-				// player2 = playerArray[1];
-
-				// scene.add(player2);
-
 
 				socket.emit('init', {
 					x: player.position.x,
 					y: player.position.y+17,
 					z: player.position.z,
 					h: player.rotation.y,
-					// b: spheres[0].velocity,
-					// bx: spheres[0].velocity.x,
-					// by: spheres[0].velocity.y,
-					// bz: spheres[0].velocity.z
-					// pb: this.object.rotation.x
 					action: actionAnime
 				});
+
+				buildChest();
 
 				// ============ EVENT LISTENER ============
 				window.addEventListener( 'resize', onWindowResize );
 			}
 
 			// ================= FONCTIONS UTILES =================
+			// ============== CHEST ==============
+			function buildChest(){
+
+				const altitude = -20;
+				const positionX = 300;
+				const positionZ = 300;
+
+				// ===== LOADERS =====
+				const loader = new THREE.TextureLoader().setPath( 'textures/' );
+				const loaderMTL = new MTLLoader().setPath( 'models/' );
+				loaderMTL.setMaterialOptions( { side: THREE.DoubleSide } ); // texture appliquer des 2 cotés de l'objet
+
+				// ======== MARCHES ========
+				// ===== TEXTURES =====
+				const marcheT = [ // texture par face
+					new THREE.MeshPhongMaterial({map: loader.load('dallePierreCoter.jpg')}), //MeshPhongMaterial = mesh mat
+					new THREE.MeshPhongMaterial({map: loader.load('dallePierreCoter.jpg')}),
+					new THREE.MeshPhongMaterial({map: loader.load('dallePierre.jpg')}),
+					new THREE.MeshPhongMaterial({map: loader.load('dallePierre.jpg')}),
+					new THREE.MeshPhongMaterial({map: loader.load('dallePierreCoter.jpg')}),
+					new THREE.MeshPhongMaterial({map: loader.load('dallePierreCoter.jpg')})
+				];
+
+				// ===== OBJECTS =====
+				const marcheHeight = 10;
+				const marcheA = new THREE.BoxGeometry( 150, marcheHeight, 150 ); // dimensions
+				const marcheB = new THREE.BoxGeometry( 100, marcheHeight, 100 );
+				const mA = new THREE.Mesh( marcheA, marcheT ); // (dimensions, texture)
+				const mB = new THREE.Mesh( marcheB, marcheT );
+				mA.position.set(positionX, altitude, positionZ);// position
+				mB.position.set(positionX, altitude+marcheHeight, positionZ) // hauteur mA + 10
+				mA.receiveShadow = true; // reçoi les ombres
+				mB.receiveShadow = true;
+				scene.add( mA ); // ajout
+				scene.add( mB );
+				worldOctree.fromGraphNode( mA );
+				worldOctree.fromGraphNode( mB );
+
+
+				// ===== GEMME =====
+				loaderMTL.load('gemme.mtl', (mtl) => { // new texture d'obj
+					const gemmeOBJ = new OBJLoader(); // new obj
+					gemmeOBJ.setMaterials(mtl); // ajout les texture a l'obj
+					gemmeOBJ.load('models/gemme.obj', (obj) => { // charge l'objet
+						obj.position.set(positionX,altitude+marcheHeight+15,positionZ); // x, y, z
+						obj.traverse( function ( child ) { // Ombres
+							if ( child instanceof THREE.Mesh ) { // cree un objet transparent autour l'objet qui prend et renvoie les ombres
+								child.receiveShadow = true;
+								child.castShadow = true;
+							}
+						});
+						obg = obj; // obliger de mettre l'objet dans une variable externe pour pouvoir l'appeler ensuite dans d'autre fonction
+						scene.add(obj); // ajout de l'obj à la scène
+					});
+				});
+
+
+				// ======== CHEST =======
+				// ===== CHEST TOP =====
+				loaderMTL.load('chestTop.mtl', (mtl) => { // new texture d'obj
+					const chtOBJ = new OBJLoader(); // new obj
+					chtOBJ.setMaterials(mtl); // ajout les texture a l'obj
+					chtOBJ.load('models/chestTop.obj', (obj) => { // charge l'objet
+						obj.position.set(positionX,altitude+marcheHeight+45,positionZ-25); // x, z, y
+						obj.traverse( function ( child ) {
+							if ( child instanceof THREE.Mesh ) {
+								child.receiveShadow = true;
+								child.castShadow = true;
+							}
+						});
+						obc = obj;
+						scene.add(obj); // ajout de l'obj à la scène
+					});
+				});
+
+				// ===== CHEST BOTTOM =====
+				loaderMTL.load('chestBottom.mtl', (mtl) => { // new texture d'obj
+					const caveOBJ = new OBJLoader(); // new obj
+					caveOBJ.setMaterials(mtl); // ajout les texture a l'obj
+					caveOBJ.load('models/chestBottom.obj', (obj) => { // charge l'objet
+						obj.position.set(positionX,altitude+marcheHeight+10,positionZ); // x, z, y
+						obj.traverse( function ( child ) {
+							if ( child instanceof THREE.Mesh ) {
+								child.receiveShadow = true;
+								child.castShadow = true;
+							}
+						});
+						scene.add(obj); // ajout de l'obj à la scène
+					});
+				});
+			}
+
 			// ============== WINDOW REZISE ==============
 			function onWindowResize() {
 				camera.aspect = window.innerWidth / window.innerHeight;
@@ -455,11 +534,6 @@
 						y: object.position.y+17,
 						z: object.position.z,
 						h: object.rotation.y,
-						// b: spheres[0].velocity,
-						// bx: spheres[0].velocity.x,
-						// by: spheres[0].velocity.y,
-						// bz: spheres[0].velocity.z
-						// pb: this.object.rotation.x,
 						action: actionAnime
 					})
 			}
