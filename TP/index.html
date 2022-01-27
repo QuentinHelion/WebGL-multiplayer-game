@@ -144,11 +144,11 @@
 
 				const loaderGLB = new GLTFLoader().setPath( 'models/' );
 				loaderGLB.load( 'labyCave.gltf', function ( obj ) {
-					obj.scene.position.y = -20;
+					obj.scene.position.y = -30;
 					obj.scene.rotation.z = 6.28;
 					obj.scene.scale.multiplyScalar(-1);
-					// scene.add( obj.scene );
-					// worldOctree.fromGraphNode( obj.scene );
+					scene.add( obj.scene );
+					worldOctree.fromGraphNode( obj.scene );
 				});
 				const sol = new THREE.Mesh(
 						new THREE.BoxGeometry( 8000, 5, 8000 ),
