@@ -19,8 +19,8 @@
 			import Stats from './jsm/libs/stats.module.js'; // Affichage des stats de la page
 
 			import { GLTFLoader } from './jsm/loaders/GLTFLoader.js';
-			import {OBJLoader} from './jsm/loaders/OBJLoader.js'; // ajout d'obj
-			import {MTLLoader} from './jsm/loaders/MTLLoader.js'; // ² obj .mtl (pour texture)
+			import { OBJLoader } from './jsm/loaders/OBJLoader.js'; // ajout d'obj
+			import { MTLLoader } from './jsm/loaders/MTLLoader.js'; // ² obj .mtl (pour texture)
 			import { FBXLoader } from './jsm/loaders/FBXLoader.js'; // FBX looader
 			import { Capsule } from './jsm/math/Capsule.js';
 			import { Octree } from './jsm/math/Octree.js';
@@ -30,10 +30,11 @@
 			let camera, scene, renderer;
 			let player, player2, playerId,playerShoot, playerShootBuffer, playerTouch, playerTouchBuffer;
 			let objChampi;
-			let pointLight, spotLightHelper;
+			let pointLight, pointLight2, spotLightHelper;
 			let playerOnFloor = false;
 			let sphereIdx = 0;
 			let player2Ball;
+			let mixer, actionAnime;
 
 			// ============== CONSTANTES ==============
 			const playerVelocity = new THREE.Vector3();
@@ -47,11 +48,16 @@
 			const vector2 = new THREE.Vector3();
 			const vector3 = new THREE.Vector3();
 
+			// ============== DEFINITION ==============
+			const actionDico = {
+				walk: 0,
+				jump: 1,
+			}
+
 			// ============== TABLEAUX ===============
 			const keyStates = {};
 			let dataArray = [];
 			let playerArray = new Array();
-			// animations = {};
 
 			// ============== PARAMETRES ===============
 			const STEPS_PER_FRAME = 5;
@@ -78,8 +84,8 @@
 
 			document.body.addEventListener( 'mousemove', ( event ) => {
 				if ( document.pointerLockElement === document.body ) {
-					camera.rotation.y -= event.movementX / 500;
-					camera.rotation.x -= event.movementY / 500;
+					player.rotation.y -= event.movementX / 500;
+					player.rotation.x += event.movementY / 500 ;
 				}
 			});
 
@@ -118,7 +124,11 @@
 				pointLight = new THREE.PointLight(0xffffff, 0.5); // (couleur, intensite)
 				pointLight.position.set(0, 100, 0); // position (x, z, y)
 				pointLight.castShadow = true; // renvoie des ombres
-				// scene.add(pointLight);
+
+
+				pointLight2 = new THREE.PointLight(0xffffff, 0.8); // (couleur, intensite)
+				pointLight2.position.set(0, 100, 0); // position (x, z, y)
+				pointLight2.castShadow = true; // renvoie des ombres
 
 
 				const sphereGeometry = new THREE.SphereGeometry( SPHERE_RADIUS, 32, 32 );
@@ -132,43 +142,87 @@
 					spheres.push( { mesh: sphere, collider: new THREE.Sphere( new THREE.Vector3( 0, - 100, 0 ), SPHERE_RADIUS ), velocity: new THREE.Vector3() } );
 				}
 
-				// player2Ball = new THREE.Mesh( sphereGeometry, sphereMaterial );
-				// player2Ball.castShadow = true;
-				// player2Ball.receiveShadow = true;
-				// scene.add( player2Ball );
-
 				const loaderGLB = new GLTFLoader().setPath( 'models/' );
 				loaderGLB.load( 'labyCave.gltf', function ( obj ) {
 					obj.scene.position.y = -20;
 					obj.scene.rotation.z = 6.28;
 					obj.scene.scale.multiplyScalar(-1);
-					scene.add( obj.scene );
-					worldOctree.fromGraphNode( obj.scene );
+					// scene.add( obj.scene );
+					// worldOctree.fromGraphNode( obj.scene );
 				});
+				const sol = new THREE.Mesh(
+						new THREE.BoxGeometry( 8000, 5, 8000 ),
+						new THREE.MeshPhongMaterial( { color: 0x363b5c, transparent: true, opacity: 0.8  } )
+				);
+				sol.receiveShadow = true;
+				sol.position.set(3500, -50, 3500);
+				scene.add( sol );
+				worldOctree.fromGraphNode( sol );
 
 				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 10000 );
 				camera.rotation.order = 'YXZ';
+				camera.position.y = 15;
+				camera.position.z = 2;
+				camera.rotation.y = 3.25;
 
-				createPerso();
-				createPerso2();
+
+				// ===== CREATION PERSONNAGE =====
+				const loaderFBX = new FBXLoader().setPath( 'models/' );
 
 				player = new THREE.Mesh(
-					new THREE.BoxGeometry( 5, 5, 5 ),
-					new THREE.MeshBasicMaterial( { color: 0xFFFFFF } )
+					new THREE.BoxGeometry( 1, 1, 1 ),
+					new THREE.MeshBasicMaterial( { color: 0xFFFFFF, transparent: true, opacity: 0 } )
 				);
+				player.add(camera);
+				player.rotation.order = 'YXZ';
+				loaderFBX.load( 'champi.fbx', function ( obj ) {
+					obj.traverse( function ( child ) {
+						if( child.isMesh ){
+							child.castShadow = true;
+							child.receiveShadow = true;
+						}
+					});
+					obj.position.y = camera.position.y - 17;
+					player.add( obj );
+				});
+				scene.add(player);
 
-				player2 = playerArray[1];
 				player2 = new THREE.Mesh(
-					new THREE.BoxGeometry( 5, 5, 5 ),
-					new THREE.MeshBasicMaterial( { color: 0xFFFFFF } )
+					new THREE.BoxGeometry( 1, 40, 1 ),
+					new THREE.MeshBasicMaterial( { color: 0xFFFFFF, transparent: true, opacity: 0 } )
 				);
 
-				console.log( spheres[0].velocity );
+				loaderFBX.load( 'champiAnimate.fbx', function( obj ) {
+					obj.traverse( function( child ) {
+						if( child.isMesh ){
+							child.castShadow = true;
+							child.receiveShadow = true;
+						}
+					});
+					// mixer = new THREE.AnimationMixer( obj );
+					// const action = mixer.clipAction( obj.animations[ 1 ] );
+					// action.play();
+					obj.position.y = player2.position.y - 20;
+					obj.add(pointLight2);
+					player2.add( obj );
+					// player2 = obj;
+				});
+
+				scene.add(player2);
+
+				console.log(player.position);
+				console.log(camera.position);
+				// player.position.y = camera.position.y - 40;
+				// player.position.x = camera.position.x - 80;
+
+				// player2 = playerArray[1];
+
+				// scene.add(player2);
+
+
 				socket.emit('init', {
-					// model: model,
-					// colour: this.colour,
 					x: player.position.x,
-					y: player.position.y,
+					y: player.position.y+17,
 					z: player.position.z,
 					h: player.rotation.y,
 					// b: spheres[0].velocity,
@@ -176,6 +230,7 @@
 					// by: spheres[0].velocity.y,
 					// bz: spheres[0].velocity.z
 					// pb: this.object.rotation.x
+					action: actionAnime
 				});
 
 				// ============ EVENT LISTENER ============
@@ -188,48 +243,6 @@
 				camera.aspect = window.innerWidth / window.innerHeight;
 				camera.updateProjectionMatrix();
 				renderer.setSize( window.innerWidth, window.innerHeight );
-			}
-
-			// ===== CREATION PERSONNAGE =====
-			function createPerso(){
-				const loaderFBX = new FBXLoader();
-				loaderFBX.setPath( 'models/' ); // emplacement des fichiers
-				loaderFBX.load( 'champi.fbx', function ( obj ) {
-					obj.traverse( function ( child ) {
-						if ( child.isMesh ) {
-							child.castShadow = true;
-							child.receiveShadow = true;
-						}
-					} );
-					// obj.rotation.y = 180;
-					obj.position.x = camera.position.x - 400;
-					obj.position.y  = camera.position.y - 400;
-					obj.position.z = camera.position.z - 400;
-					camera.add( obj );
-					player = camera;
-				});
-				console.log('createPerso end');
-			}
-
-			function createPerso2(){
-				const loaderFBX = new FBXLoader();
-				loaderFBX.setPath( 'models/' ); // emplacement des fichiers
-				loaderFBX.load( 'champi.fbx', function ( obj ) {
-					obj.traverse( function ( child ) {
-						if ( child.isMesh ) {
-							child.castShadow = true;
-							child.receiveShadow = true;
-						}
-					} );
-					// obj.getWorldDirection( playerDirection );
-					// obj.position.set(0, 100, 0);
-					obj.add(pointLight);
-					scene.add( obj );
-					// return obj;/
-					player2 = obj;
-					// playerArray.push(obj);
-				});
-				console.log('createPerso end');
 			}
 
 			// ============== GUI ==============
@@ -282,6 +295,9 @@
 				// console.log(keyStates);
 				if(playerTouchBuffer == undefined){
 					if ( keyStates[ 'KeyW' ] ) {
+						if(playerOnFloor){
+							actionAnime = 'walk';
+						}
 						playerVelocity.add( getForwardVector().multiplyScalar( speedDelta ) );
 					}
 
@@ -299,6 +315,7 @@
 
 					if ( playerOnFloor ) {
 						if ( keyStates[ 'Space' ] ) {
+							actionAnime = 'jump';
 							playerVelocity.y = 70;
 						}
 					}
@@ -311,7 +328,7 @@
 				}
 			}
 
-			// ============== MOVEMEMENT ==============
+			// ============== MOVEMEMENTS ==============
 			function getForwardVector() {
 				player.getWorldDirection( playerDirection );
 				playerDirection.y = 0;
@@ -365,52 +382,25 @@
 				}
 			}
 
+			// ============== BALLES ==============
 			function throwBall() {
 				const sphere = spheres[ 0 ];
 				player.getWorldDirection( playerDirection );
 				sphere.collider.center.copy( playerCollider.end ).addScaledVector( playerDirection, playerCollider.radius * 1.5 );
-				const impulse = 150 + 30;// * ( 1 - Math.exp( ( mouseTime - performance.now() ) * 0.001 ) );
+				const impulse = 650 + 30;
 				sphere.velocity.copy( playerDirection ).multiplyScalar( impulse );
 				sphere.velocity.addScaledVector( playerVelocity, 2 );
-				// sphereIdx = ( sphereIdx + 1 ) % spheres.length;
 				console.log('shot');
 				socket.emit('ballShoot', {data: spheres[0].velocity, id: playerId});
 			}
-
-
-			// function playerSphereCollision( sphere ) {
-			// 	const center = vector1.addVectors( playerCollider.start, playerCollider.end ).multiplyScalar( 0.5 );
-			// 	const sphere_center = sphere.collider.center;
-			// 	const r = playerCollider.radius + sphere.collider.radius;
-			// 	const r2 = r * r;
-			// 	// approximation: player = 3 spheres
-			// 	for ( const point of [ playerCollider.start, playerCollider.end, center ] ) {
-			// 		const d2 = point.distanceToSquared( sphere_center );
-			// 		if ( d2 < r2 ) {
-			// 			const normal = vector1.subVectors( point, sphere_center ).normalize();
-			// 			const v1 = vector2.copy( normal ).multiplyScalar( normal.dot( playerVelocity ) );
-			// 			const v2 = vector3.copy( normal ).multiplyScalar( normal.dot( sphere.velocity ) );
-			// 			playerVelocity.add( v2 ).sub( v1 );
-			// 			sphere.velocity.add( v1 ).sub( v2 );
-			// 			const d = ( r - Math.sqrt( d2 ) ) / 2;
-			// 			sphere_center.addScaledVector( normal, - d );
-			// 		}
-			// 	}
-			// }
 
 			function spheresCollisions() {
 				for ( let i = 0, length = spheres.length; i < length; i ++ ) {
 					const s1 = spheres[ i ];
 					const d3 = s1.collider.center.distanceToSquared( player2.position );
 					if(d3 < 70){
-						// console.log('touch !');
 						socket.emit('touchPlayer', playerId);
 					}
-					// 	playerShoot = true;
-					// } else {
-					// 	playerShoot = false;
-					// }
-
 				}
 			}
 
@@ -432,9 +422,7 @@
 				for ( const sphere of spheres ) {
 					sphere.mesh.position.copy( sphere.collider.center );
 				}
-				// updateSocket(player);
 			}
-
 
 
 			// ============== FONCTION MULTIJOUEURS ==============
@@ -445,21 +433,15 @@
 						if(playerId != data.id){
 							player2.position.set(data.x, data.y, data.z );
 							player2.rotation.y = data.h;
-
-							// player2Ball.position.set(data.b)
-							// spheres[1].velocity.x =  data.bx;
-							// spheres[1].velocity.y =  data.by;
-							// spheres[1].velocity.z =  data.bz;
-
-							// console.log(spheres[1].velocity);
-
-							// console.log(data.b);
+							if(data.action != actionAnime){
+								actionAnime = data.action;
+								// mixer = new THREE.AnimationMixer( player2 );
+								// console.log( actionAnime );
+								// console.log( actionDico[data.action] );
+								// const action = mixer.clipAction( player2.animations[ actionDico[data.action] ] );
+								// action.play();
+							}
 						}
-						// if(playerId == data.id && data.touch && !playerShootBuffer){
-						// 	console.log("bloquer");
-						// 	playerShoot = true;
-						// 	playerShootBuffer = parseInt(clock["oldTime"]);
-						// }
 					}
 				}
 			}
@@ -469,7 +451,7 @@
 					//console.log(`PlayerLocal.updateSocket - rotation(${this.object.rotation.x.toFixed(1)},${this.object.rotation.y.toFixed(1)},${this.object.rotation.z.toFixed(1)})`);
 					socket.emit('update', {
 						x: object.position.x,
-						y: object.position.y,
+						y: object.position.y+17,
 						z: object.position.z,
 						h: object.rotation.y,
 						// b: spheres[0].velocity,
@@ -477,10 +459,8 @@
 						// by: spheres[0].velocity.y,
 						// bz: spheres[0].velocity.z
 						// pb: this.object.rotation.x,
-						// action: this.action
+						action: actionAnime
 					})
-					// console.log(spheres[0].velocity.y);
-				// }
 			}
 
 			function animate() {
@@ -497,6 +477,15 @@
 					teleportPlayerIfOob();
 				}
 
+				// const delta = clock.getDelta();
+				// if ( mixer ){
+				// 	// for(y = 0; y < mixerArray.length; y++){
+				// 		// mixer = mixerArray[y];
+				// 		mixer.timeScale = 7;
+				// 		mixer.update( delta );
+				// 	// }
+				// }
+
 				renderer.render( scene, camera );
 
 
@@ -509,14 +498,6 @@
 					dataArray = data;
 					remoteData();
 				});
-
-				// if(playerShoot != playerShootBuffer){
-				// 	// playerShootBuffer = playerShoot;
-				// 	if(playerShoot){
-				// 		console.log('touch');
-				// 		socket.emit('touchPlayer', playerId);
-				// 	}
-				// }
 
 				socket.on('touchPlayerReponse', function(data){
 					// playerTouch = true;

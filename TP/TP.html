@@ -27,6 +27,7 @@
 			let camera, scene, renderer;
 			let pointLight, spotLightHelper;
 			let obc, obg;
+			let mixer;
 			const playerVelocity = new THREE.Vector3();
 			const playerDirection = new THREE.Vector3();
 			const playerCollider = new Capsule( new THREE.Vector3( 0, 0.35, 0 ), new THREE.Vector3( 0, 1, 0 ), 0.35 );
@@ -368,6 +369,13 @@
 				window.requestAnimationFrame( animate ); // recup fps
 				stats.update();
 
+				if ( mixerArray ){
+					// for(y = 0; y < mixerArray.length; y++){
+						// mixer = mixerArray[y];
+						mixer.timeScale = .7;
+						mixer.update( delta );
+					// }
+				}
 
 				for ( let i = 0; i < STEPS_PER_FRAME; i ++ ) {
 					control( deltaTime );

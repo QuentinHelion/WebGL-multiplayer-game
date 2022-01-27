@@ -58,7 +58,7 @@ io.sockets.on('connection', function(socket){
     // socket.userData.bz = data.bz; // balls position z
     // console.log("x: "+data.x);
 		// socket.userData.pb = data.pb,
-		// socket.userData.action = data.action;
+		socket.userData.action = data.action;
 	});
 
   socket.on('ballShoot',function(data){
@@ -114,7 +114,7 @@ setInterval(function(){
         // by: socket.userData.by, // balls position y
         // bz: socket.userData.bz, // balls position z
 				// pb: socket.userData.pb,
-				// action: socket.userData.action
+				action: socket.userData.action
         // touch: socket.id == shooter ? false : true
 			});
 		}
