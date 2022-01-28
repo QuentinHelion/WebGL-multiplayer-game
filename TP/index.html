@@ -36,6 +36,9 @@
 			let player2Ball;
 			let mixer, actionAnime;
 			let obc, obg;
+			let animeState,i;
+			let gameState = 0;
+			i = 0;
 
 			// ============== CONSTANTES ==============
 			const playerVelocity = new THREE.Vector3();
@@ -63,7 +66,7 @@
 			// ============== PARAMETRES ===============
 			const STEPS_PER_FRAME = 5;
 			const GRAVITY = 30;
-			const NUM_SPHERES = 2;
+			const NUM_SPHERES = 1;
 			const SPHERE_RADIUS = 4;
 
 			// =============== EVENT LISTENER ===============
@@ -221,7 +224,7 @@
 
 				buildChest();
 
-
+				gameState = 1;
 
 				// ============ EVENT LISTENER ============
 				window.addEventListener( 'resize', onWindowResize );
@@ -334,6 +337,32 @@
 				});
 			}
 
+			function animeChest(){
+				if(animeState == 1){ // 1er étape animation (ouvrir le coffre et sortir le gemme)
+					if(i >= 300){ // permet de faire tourner x fois le gemme jusqu'à l'arrêt
+						animeState = 2; // passe à la 2e étape de l'animation
+						i = 0;
+					} else {
+						obc.rotation.x -= 0.01;
+						obg.position.y += 0.2;
+						obg.rotation.y += 0.05;
+						i++;
+						// console.log(i);
+					}
+				} else if(animeState == 2){ // 2e étape animation (refermer le coffre et ranger le gemme)
+					if(i >= 300){ // permet de faire tourner x fois le gemme jusqu'à l'arrêt
+						animeState = 0;
+						i = 0;
+					} else {
+						obc.rotation.x += 0.01;
+						obg.position.y -= 0.2;
+						obg.rotation.y += 0.05;
+						i++;
+						// console.log(i);
+					}
+				};
+			}
+
 			// ============== WINDOW REZISE ==============
 			function onWindowResize() {
 				camera.aspect = window.innerWidth / window.innerHeight;
@@ -389,7 +418,7 @@
 			function control( deltaTime ) {
 				const speedDelta = deltaTime * ( playerOnFloor ? 350 : 90 );
 				// console.log(keyStates);
-				if(playerTouchBuffer == undefined){
+				if(playerTouchBuffer == undefined && gameState == 1){
 					if ( keyStates[ 'KeyW' ] ) {
 						if(playerOnFloor){
 							actionAnime = 'walk';
@@ -554,6 +583,18 @@
 					})
 			}
 
+
+			// ============== FIN DE PARTIE ==============
+			function endGame(data){
+				animeState = 1;
+				if(data === playerId && gameState ){
+					console.log("win");
+				} else {
+					console.log("lose");
+				}
+				gameState = 0;
+			}
+
 			function animate() {
 				// ========= LOCAL PART =========
 				const deltaTime = Math.min( 0.05, clock.getDelta() ) / STEPS_PER_FRAME;
@@ -578,12 +619,15 @@
 				// }
 
 				if(player && obg){
+					animeChest();
 					if(Math.abs(player.position.x - obg.position.x) < 70 && Math.abs(player.position.z - obg.position.z) < 70 ){
-						console.log("win");
+						if(!animeState){
+							// console.log("win");
+							// animeState = 1;
+							socket.emit('playerWin',playerId);
+						}
 					}
 				}
-
-
 
 				renderer.render( scene, camera );
 
@@ -591,7 +635,6 @@
 				// ========= MULTIPLAYER PART =========
 				socket.on('setId', function(data){
 					playerId = data.id;
-					// console.log( data.id );
 				});
 				socket.on('remoteData', function(data){
 					dataArray = data;
@@ -599,7 +642,6 @@
 				});
 
 				socket.on('touchPlayerReponse', function(data){
-					// playerTouch = true;
 					if(playerTouchBuffer == undefined && data != playerId){
 						playerTouchBuffer = parseInt(clock["oldTime"]);
 						console.log('toucher !');
@@ -607,25 +649,14 @@
 				});
 
 				if(parseInt(clock["oldTime"]) - playerTouchBuffer >= 5000 && playerTouchBuffer){
-					// playerTouch = false;
 					playerTouchBuffer = undefined;
 				}
 
-				socket.on('ballShoot', function(data){
-					spheres[1].velocity.copy(data);
-					// console.log(spheres[1].velocity);
+				socket.on('end', function(data){
+					if(gameState){
+						endGame(data);
+					}
 				});
-
-
-				// console.log(spheres[0].position);
-
-
-
-
-				// socket.on('userData', function(userData){
-				// 	// console.log(userData.x);
-				// 	// player.position.set(userData.x, userData.y,userData.z);
-				// });
 
 			}
 		</script>

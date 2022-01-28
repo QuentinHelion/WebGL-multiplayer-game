@@ -68,25 +68,22 @@ io.sockets.on('connection', function(socket){
   		if(socket.id != data.id){
         socket.emit('ballShoot', data.data);
   		}
-  }
-})
-
-	// socket.on('chat message', function(data){
-	// 	console.log(`chat message:${data.id} ${data.message}`);
-	// 	io.to(data.id).emit('chat message', { id: socket.id, message: data.message });
-	// })
+    }
+  });
 
   socket.on('touchPlayer',function(data){
-    // shooter = data;
     const nsp = io.of('/');
     for(let id in io.sockets.sockets){
       const socket = nsp.connected[id];
       if(socket.id != data){
         io.emit('touchPlayerReponse', data);
       }
-      // socket.id == shooter ? false : true
     }
-    console.log(data+" as shoot");
+    // console.log(data+" as shoot");
+  });
+
+  socket.on('playerWin', function(data){
+    io.emit('end', data);
   });
 
 
@@ -109,21 +106,12 @@ setInterval(function(){
 				y: socket.userData.y,
 				z: socket.userData.z,
 				h: socket.userData.h,
-        // b: socket.userData.b,
-        // bx: socket.userData.bx, // balls position x
-        // by: socket.userData.by, // balls position y
-        // bz: socket.userData.bz, // balls position z
-				// pb: socket.userData.pb,
 				action: socket.userData.action
-        // touch: socket.id == shooter ? false : true
 			});
 		}
-    // if(socket.id != )
   }
 	if (pack.length>0) {
     io.emit('remoteData', pack);
-    // console.log(pack);
-    // console.log('emit remoteData');
   }
 
 }, 40);
