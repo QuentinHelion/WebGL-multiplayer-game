@@ -194,7 +194,6 @@
 					new THREE.BoxGeometry( 1, 40, 1 ),
 					new THREE.MeshBasicMaterial( { color: 0xFFFFFF, transparent: true, opacity: 0 } )
 				);
-
 				loaderFBX.load( 'champiAnimate.fbx', function( obj ) {
 					obj.traverse( function( child ) {
 						if( child.isMesh ){
@@ -222,6 +221,8 @@
 
 				buildChest();
 
+
+
 				// ============ EVENT LISTENER ============
 				window.addEventListener( 'resize', onWindowResize );
 			}
@@ -233,6 +234,7 @@
 				const altitude = -20;
 				const positionX = 300;
 				const positionZ = 300;
+				const scaleOBJ = .5;
 
 				// ===== LOADERS =====
 				const loader = new THREE.TextureLoader().setPath( 'textures/' );
@@ -249,6 +251,13 @@
 					new THREE.MeshPhongMaterial({map: loader.load('dallePierreCoter.jpg')}),
 					new THREE.MeshPhongMaterial({map: loader.load('dallePierreCoter.jpg')})
 				];
+
+				// ===== CONE LUMIERE =====
+				const coneT = new THREE.MeshBasicMaterial({	color: 0xFFFFFF, opacity: 0.1, transparent: true, side: THREE.DoubleSide});
+				const coneGeo = new THREE.ConeGeometry( 70, 350, 60 ); // dimension (radius, hauteur, segments)
+				const cone = new THREE.Mesh(coneGeo, coneT); // (dimensions, texture)
+				cone.position.set( positionX, altitude+180, positionZ ); // position
+				scene.add(cone);
 
 				// ===== OBJECTS =====
 				const marcheHeight = 10;
@@ -278,6 +287,7 @@
 								child.castShadow = true;
 							}
 						});
+						obj.scale.multiplyScalar(scaleOBJ);
 						obg = obj; // obliger de mettre l'objet dans une variable externe pour pouvoir l'appeler ensuite dans d'autre fonction
 						scene.add(obj); // ajout de l'obj à la scène
 						// worldOctree.fromGraphNode( obj );
@@ -291,13 +301,14 @@
 					const chtOBJ = new OBJLoader(); // new obj
 					chtOBJ.setMaterials(mtl); // ajout les texture a l'obj
 					chtOBJ.load('models/chestTop.obj', (obj) => { // charge l'objet
-						obj.position.set(positionX,altitude+marcheHeight+45,positionZ-25); // x, z, y
+						obj.position.set(positionX,altitude+marcheHeight+22,positionZ-12.5); // x, z, y
 						obj.traverse( function ( child ) {
 							if ( child instanceof THREE.Mesh ) {
 								child.receiveShadow = true;
 								child.castShadow = true;
 							}
 						});
+						obj.scale.multiplyScalar(scaleOBJ);
 						obc = obj;
 						scene.add(obj); // ajout de l'obj à la scène
 						// worldOctree.fromGraphNode( obj );
@@ -309,13 +320,14 @@
 					const caveOBJ = new OBJLoader(); // new obj
 					caveOBJ.setMaterials(mtl); // ajout les texture a l'obj
 					caveOBJ.load('models/chestBottom.obj', (obj) => { // charge l'objet
-						obj.position.set(positionX,altitude+marcheHeight+10,positionZ); // x, z, y
+						obj.position.set(positionX,altitude+marcheHeight+4.5,positionZ); // x, z, y
 						obj.traverse( function ( child ) {
 							if ( child instanceof THREE.Mesh ) {
 								child.receiveShadow = true;
 								child.castShadow = true;
 							}
 						});
+						obj.scale.multiplyScalar(scaleOBJ);
 						scene.add(obj); // ajout de l'obj à la scène
 						// worldOctree.fromGraphNode( obj );
 					});
@@ -564,6 +576,14 @@
 				// 		mixer.update( delta );
 				// 	// }
 				// }
+
+				if(player && obg){
+					if(Math.abs(player.position.x - obg.position.x) < 70 && Math.abs(player.position.z - obg.position.z) < 70 ){
+						console.log("win");
+					}
+				}
+
+
 
 				renderer.render( scene, camera );
 
