@@ -35,6 +35,7 @@
 			let sphereIdx = 0;
 			let player2Ball;
 			let mixer, actionAnime;
+			let obc, obg;
 
 			// ============== CONSTANTES ==============
 			const playerVelocity = new THREE.Vector3();
@@ -279,6 +280,7 @@
 						});
 						obg = obj; // obliger de mettre l'objet dans une variable externe pour pouvoir l'appeler ensuite dans d'autre fonction
 						scene.add(obj); // ajout de l'obj à la scène
+						// worldOctree.fromGraphNode( obj );
 					});
 				});
 
@@ -298,6 +300,7 @@
 						});
 						obc = obj;
 						scene.add(obj); // ajout de l'obj à la scène
+						// worldOctree.fromGraphNode( obj );
 					});
 				});
 
@@ -314,6 +317,7 @@
 							}
 						});
 						scene.add(obj); // ajout de l'obj à la scène
+						// worldOctree.fromGraphNode( obj );
 					});
 				});
 			}
