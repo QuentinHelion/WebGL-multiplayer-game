@@ -151,18 +151,18 @@
 					obj.scene.position.y = -30;
 					obj.scene.rotation.z = 6.28;
 					obj.scene.scale.multiplyScalar(-1);
-					// scene.add( obj.scene );
-					// worldOctree.fromGraphNode( obj.scene );
+					scene.add( obj.scene );
+					worldOctree.fromGraphNode( obj.scene );
 				});
 
 				const sol = new THREE.Mesh(
-						new THREE.BoxGeometry( 8000, 5, 8000 ),
+						new THREE.BoxGeometry( 15000, 5, 15000 ),
 						new THREE.MeshPhongMaterial( { color: 0x363b5c, transparent: true, opacity: 0.8  } )
 				);
 				sol.receiveShadow = true;
 				sol.position.set(3500, -50, 3500);
-				scene.add( sol );
-				worldOctree.fromGraphNode( sol );
+				// scene.add( sol );
+				// worldOctree.fromGraphNode( sol );
 
 				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 10000 );
 				camera.rotation.order = 'YXZ';
@@ -234,9 +234,9 @@
 			// ============== CHEST ==============
 			function buildChest(){
 
-				const altitude = -20;
-				const positionX = 300;
-				const positionZ = 300;
+				const positionY = -30;
+				const positionX = -2300;
+				const positionZ = -2065;
 				const scaleOBJ = .5;
 
 				// ===== LOADERS =====
@@ -259,7 +259,7 @@
 				const coneT = new THREE.MeshBasicMaterial({	color: 0xFFFFFF, opacity: 0.1, transparent: true, side: THREE.DoubleSide});
 				const coneGeo = new THREE.ConeGeometry( 70, 350, 60 ); // dimension (radius, hauteur, segments)
 				const cone = new THREE.Mesh(coneGeo, coneT); // (dimensions, texture)
-				cone.position.set( positionX, altitude+180, positionZ ); // position
+				cone.position.set( positionX, positionY+180, positionZ ); // position
 				scene.add(cone);
 
 				// ===== OBJECTS =====
@@ -268,8 +268,8 @@
 				const marcheB = new THREE.BoxGeometry( 100, marcheHeight, 100 );
 				const mA = new THREE.Mesh( marcheA, marcheT ); // (dimensions, texture)
 				const mB = new THREE.Mesh( marcheB, marcheT );
-				mA.position.set(positionX, altitude, positionZ);// position
-				mB.position.set(positionX, altitude+marcheHeight, positionZ) // hauteur mA + 10
+				mA.position.set(positionX, positionY, positionZ);// position
+				mB.position.set(positionX, positionY+marcheHeight, positionZ) // hauteur mA + 10
 				mA.receiveShadow = true; // reçoi les ombres
 				mB.receiveShadow = true;
 				scene.add( mA ); // ajout
@@ -283,7 +283,7 @@
 					const gemmeOBJ = new OBJLoader(); // new obj
 					gemmeOBJ.setMaterials(mtl); // ajout les texture a l'obj
 					gemmeOBJ.load('models/gemme.obj', (obj) => { // charge l'objet
-						obj.position.set(positionX,altitude+marcheHeight+15,positionZ); // x, y, z
+						obj.position.set(positionX,positionY+marcheHeight+15,positionZ); // x, y, z
 						obj.traverse( function ( child ) { // Ombres
 							if ( child instanceof THREE.Mesh ) { // cree un objet transparent autour l'objet qui prend et renvoie les ombres
 								child.receiveShadow = true;
@@ -304,13 +304,14 @@
 					const chtOBJ = new OBJLoader(); // new obj
 					chtOBJ.setMaterials(mtl); // ajout les texture a l'obj
 					chtOBJ.load('models/chestTop.obj', (obj) => { // charge l'objet
-						obj.position.set(positionX,altitude+marcheHeight+22,positionZ-12.5); // x, z, y
+						obj.position.set(positionX,positionY+marcheHeight+22,positionZ+12.5); // x, z, y
 						obj.traverse( function ( child ) {
 							if ( child instanceof THREE.Mesh ) {
 								child.receiveShadow = true;
 								child.castShadow = true;
 							}
 						});
+						obj.rotation.y = 6.28/2;
 						obj.scale.multiplyScalar(scaleOBJ);
 						obc = obj;
 						scene.add(obj); // ajout de l'obj à la scène
@@ -323,7 +324,7 @@
 					const caveOBJ = new OBJLoader(); // new obj
 					caveOBJ.setMaterials(mtl); // ajout les texture a l'obj
 					caveOBJ.load('models/chestBottom.obj', (obj) => { // charge l'objet
-						obj.position.set(positionX,altitude+marcheHeight+4.5,positionZ); // x, z, y
+						obj.position.set(positionX,positionY+marcheHeight+4.5,positionZ); // x, z, y
 						obj.traverse( function ( child ) {
 							if ( child instanceof THREE.Mesh ) {
 								child.receiveShadow = true;
@@ -339,23 +340,23 @@
 
 			function animeChest(){
 				if(animeState == 1){ // 1er étape animation (ouvrir le coffre et sortir le gemme)
-					if(i >= 300){ // permet de faire tourner x fois le gemme jusqu'à l'arrêt
+					if(i >= 100){ // permet de faire tourner x fois le gemme jusqu'à l'arrêt
 						animeState = 2; // passe à la 2e étape de l'animation
 						i = 0;
 					} else {
-						obc.rotation.x -= 0.01;
-						obg.position.y += 0.2;
+						obc.rotation.x += 0.03;
+						obg.position.y += 0.3;
 						obg.rotation.y += 0.05;
 						i++;
 						// console.log(i);
 					}
 				} else if(animeState == 2){ // 2e étape animation (refermer le coffre et ranger le gemme)
-					if(i >= 300){ // permet de faire tourner x fois le gemme jusqu'à l'arrêt
+					if(i >= 100){ // permet de faire tourner x fois le gemme jusqu'à l'arrêt
 						animeState = 0;
 						i = 0;
 					} else {
-						obc.rotation.x += 0.01;
-						obg.position.y -= 0.2;
+						obc.rotation.x -= 0.03;
+						obg.position.y -= 0.3;
 						obg.rotation.y += 0.05;
 						i++;
 						// console.log(i);
@@ -436,6 +437,11 @@
 
 					if ( keyStates[ 'KeyD' ] ) {
 						playerVelocity.add( getSideVector().multiplyScalar( speedDelta ) );
+					}
+
+					if ( keyStates[ 'KeyK' ] ) {
+						console.log(player.position.x);
+						console.log(player.position.z);
 					}
 
 					if ( playerOnFloor ) {
