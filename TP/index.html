@@ -105,7 +105,7 @@
 
 			const startButton = document.getElementById( 'startButton' );
 			startButton.addEventListener( 'click', function () {
-				startGame();
+				sendStartRequest();
 			} );
 
 			// ============== APPEL FONCTIONS ==============
@@ -604,10 +604,16 @@
 			}
 
 			// ============== DEBUT DE PARTIE ==============
+			function sendStartRequest(){
+				socket.emit('startRequest');
+			}
+
 			function startGame(){
-				gameState = 1;
-				const overlay = document.getElementById( 'overlay' );
-				overlay.remove();
+				if(!gameState){
+					gameState = 1;
+					const overlay = document.getElementById( 'overlay' );
+					overlay.remove();
+				}
 			}
 
 			// ============== FIN DE PARTIE ==============
@@ -687,6 +693,11 @@
 					if(gameState){
 						endGame(data);
 					}
+				});
+
+				socket.on('startGameApprouved', function(){
+					console.log('start request approuved');
+					startGame();
 				});
 
 			}

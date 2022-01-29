@@ -86,6 +86,11 @@ io.sockets.on('connection', function(socket){
     io.emit('end', data);
   });
 
+  socket.on('startRequest', function(){
+    console.log('start !');
+    io.emit('startGameApprouved');
+  });
+
 
 });
 
