@@ -10,7 +10,9 @@
 		</head>
 	</head>
 	<body>
-		<!-- <script src="https://code.jquery.com/jquery-1.11.1.js"></script> -->
+		<div id="overlay">
+			<button id="startButton" hidden>Play</button>
+		</div>
 		<script type="module">
 			// ============== IMPORTS ==============
 			import * as THREE from './build/three.module.js'; // Element threejs
@@ -35,10 +37,14 @@
 			let sphereIdx = 0;
 			let player2Ball;
 			let mixer, actionAnime;
-			let obc, obg;
-			let animeState,i;
+			let animeState;
 			let gameState = 0;
-			i = 0;
+			let i = 0;
+
+			// ============== VARIABLE OBJECTS ==============
+			let obc;
+			let obg;
+			let cave;
 
 			// ============== CONSTANTES ==============
 			const playerVelocity = new THREE.Vector3();
@@ -92,6 +98,11 @@
 					player.rotation.x += event.movementY / 500 ;
 				}
 			});
+
+			const startButton = document.getElementById( 'startButton' );
+			startButton.addEventListener( 'click', function () {
+				startGame();
+			} );
 
 			// ============== APPEL FONCTIONS ==============
 			init();
@@ -153,6 +164,7 @@
 					obj.scene.scale.multiplyScalar(-1);
 					scene.add( obj.scene );
 					worldOctree.fromGraphNode( obj.scene );
+					cave = obj.scene;
 				});
 
 				const sol = new THREE.Mesh(
@@ -223,8 +235,6 @@
 				});
 
 				buildChest();
-
-				gameState = 1;
 
 				// ============ EVENT LISTENER ============
 				window.addEventListener( 'resize', onWindowResize );
@@ -529,7 +539,7 @@
 				for ( let i = 0, length = spheres.length; i < length; i ++ ) {
 					const s1 = spheres[ i ];
 					const d3 = s1.collider.center.distanceToSquared( player2.position );
-					if(d3 < 70){
+					if(d3 < 90){
 						socket.emit('touchPlayer', playerId);
 					}
 				}
@@ -589,6 +599,12 @@
 					})
 			}
 
+			// ============== DEBUT DE PARTIE ==============
+			function startGame(){
+				gameState = 1;
+				const overlay = document.getElementById( 'overlay' );
+				overlay.remove();
+			}
 
 			// ============== FIN DE PARTIE ==============
 			function endGame(data){
@@ -603,6 +619,11 @@
 
 			function animate() {
 				// ========= LOCAL PART =========
+
+				if( obc && obg && cave && !gameState ){
+					document.getElementById('startButton').hidden = false;
+				}
+
 				const deltaTime = Math.min( 0.05, clock.getDelta() ) / STEPS_PER_FRAME;
 				window.requestAnimationFrame( animate ); // animation de la page
 				stats.update();
