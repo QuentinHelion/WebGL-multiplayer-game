@@ -38,7 +38,7 @@
 			let player2Ball;
 			let mixer, actionAnime;
 			let animeState;
-			let gameState = 0;
+			let gameState = 0; // 0 => non, 1 => jeu en cours, 2 => fin  
 			let i = 0;
 
 			// ============== VARIABLE OBJECTS ==============
@@ -624,7 +624,7 @@
 				} else {
 					console.log("lose");
 				}
-				gameState = 0;
+				gameState = 2;
 			}
 
 			function animate() {
