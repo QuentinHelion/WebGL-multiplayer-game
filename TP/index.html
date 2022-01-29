@@ -85,7 +85,9 @@
 			});
 
 			document.addEventListener( 'mouseup', () => {
-				throwBall();
+				if(gameState){
+					throwBall();
+				}
 			});
 
 			document.addEventListener( 'mousedown', () => {
