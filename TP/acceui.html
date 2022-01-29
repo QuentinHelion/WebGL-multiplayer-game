@@ -4,26 +4,26 @@
     <title>Welcome to the MushroomCave</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <style>
-      footer{
+      footer#overlay{
         text-align: center;
         align-items: center;
         font-size: 20px;
-      position: absolute; bottom: 0; left: 0; right: 0;
-      color:white;
+        position: absolute; bottom: 0; left: 0; right: 0;
+        color:white;
       }
 
-      a{
+      a#overlay{
         margin-top: 35%;
-        margin-left: 44%;
+        /* margin-left: 44%; */
         position: absolute;
       }
 
-      video{
+      video#overlay{
         position: absolute;
         width: 100%;
       }
 
-      h1 {
+      h1#overlay {
         position: absolute;
         margin-left: 12%;
         margin-top : 25%;
@@ -52,12 +52,11 @@
   </head>
 
   <body>
-
-    <video  class="video-fluid z-depth-1" autoplay loop  muted>
+    <video  class="video-fluid z-depth-1" id="overlay" autoplay loop  muted>
       <source src="media/Cave.mp4" type="video/mp4" />
     </video>
-    <h1>Welcome to the MushroomCave</h1>
-    <a href="TP2.html"><button type="button" class="btn btn-outline-light">Lancer la partie</button></a>
+    <h1 id="overlay">Welcome to the MushroomCave</h1>
+    <a href="TP2.html" id="overlay"><button type="button" class="btn btn-outline-light">Lancer la partie</button></a>
   </body>
-  <footer>Presented by Khadda Hicham, Siad Racha, Helion Quentin</footer>
+  <footer id="overlay">Presented by Khadda Hicham, Siad Racha, Helion Quentin</footer>
 </html>
