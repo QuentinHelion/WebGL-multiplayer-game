@@ -78,19 +78,21 @@
 			// =============== EVENT LISTENER ===============
 			document.addEventListener( 'keydown', ( event ) => {
 				keyStates[ event.code ] = true;
-			} );
+			});
 
 			document.addEventListener( 'keyup', ( event ) => {
 				keyStates[ event.code ] = false;
-			} );
+			});
 
 			document.addEventListener( 'mouseup', () => {
 				throwBall();
-			} );
+			});
 
 			document.addEventListener( 'mousedown', () => {
-				document.body.requestPointerLock();
-			} );
+				if(gameState){
+					document.body.requestPointerLock();
+				}
+			});
 
 			document.body.addEventListener( 'mousemove', ( event ) => {
 				if ( document.pointerLockElement === document.body ) {
