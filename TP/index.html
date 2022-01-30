@@ -238,9 +238,6 @@
 							child.receiveShadow = true;
 						}
 					});
-					// mixer = new THREE.AnimationMixer( obj );
-					// const action = mixer.clipAction( obj.animations[ 1 ] );
-					// action.play();
 					obj.rotation.y = 3.25;
 					obj.position.y = player2.position.y - 20;
 					obj.add(pointLight2);
@@ -458,34 +455,40 @@
 							actionAnime = 'walk';
 						}
 						playerVelocity.add( getForwardVector().multiplyScalar( speedDelta ) );
-					} else if ( keyStates[ 'KeyS' ] ) {
+					}
+					if ( keyStates[ 'KeyS' ] ) {
 						if(playerOnFloor){
 							actionAnime = 'back';
 						}
 						playerVelocity.add( getForwardVector().multiplyScalar( - speedDelta ) );
-					} else if ( keyStates[ 'KeyA' ] ) {
+					}
+					if ( keyStates[ 'KeyA' ] ) {
 						if(playerOnFloor){
 							actionAnime = 'right';
 						}
 						playerVelocity.add( getSideVector().multiplyScalar( - speedDelta ) );
-					} else if ( keyStates[ 'KeyD' ] ) {
+					}
+					if ( keyStates[ 'KeyD' ] ) {
 						if(playerOnFloor){
 							actionAnime = 'left';
 						}
 						playerVelocity.add( getSideVector().multiplyScalar( speedDelta ) );
-					} else if ( keyStates[ 'KeyK' ] ) {
+					}
+					if ( keyStates[ 'KeyK' ] ) {
 						console.log(player.position.x);
 						console.log(player.position.z);
-					} else if ( playerOnFloor ) {
+					}
+					if ( playerOnFloor ) {
 						if ( keyStates[ 'Space' ] ) {
 							actionAnime = 'jump';
 							playerVelocity.y = 70;
 						} else {
 							actionAnime = 'stand';
 						}
-					} else if ( keyStates[ 'KeyQ' ] ) {
+					} if ( keyStates[ 'KeyQ' ] ) {
 						player.rotation.y += 0.03;
-					} else if ( keyStates[ 'KeyE' ] ) {
+					}
+					if ( keyStates[ 'KeyE' ] ) {
 						player.rotation.y -= 0.03;
 					}
 				}
@@ -547,7 +550,6 @@
 
 			function animeChange( anime ){
 				anime = actionDico[anime];
-				console.log(anime);
 				const loaderFBX = new FBXLoader();
 				loaderFBX.setPath( 'models/' ); // emplacement des fichiers
 				loaderFBX.load(anime, function (obj) {
@@ -608,7 +610,6 @@
 							player2.rotation.y = data.h;
 							if(data.action != actionAnimeBuffer){
 								actionAnimeBuffer = data.action;
-								// console.log( "action: "+data.action );
 								animeChange( data.action );
 							}
 						}
