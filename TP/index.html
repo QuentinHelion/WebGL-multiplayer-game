@@ -179,7 +179,7 @@
 					obj.scene.rotation.z = 6.28;
 					obj.scene.scale.multiplyScalar(-1);
 					scene.add( obj.scene );
-					worldOctree.fromGraphNode( obj.scene );
+					// worldOctree.fromGraphNode( obj.scene );
 					cave = obj.scene;
 				});
 
@@ -189,8 +189,8 @@
 				);
 				sol.receiveShadow = true;
 				sol.position.set(3500, -50, 3500);
-				// scene.add( sol );
-				// worldOctree.fromGraphNode( sol );
+				scene.add( sol );
+				worldOctree.fromGraphNode( sol );
 
 				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 10000 );
 				camera.rotation.order = 'YXZ';
