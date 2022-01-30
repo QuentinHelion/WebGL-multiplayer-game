@@ -79,6 +79,7 @@ div#under-overlay{
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
+	padding-bottom: 120px;
 }
 
 
@@ -127,4 +128,8 @@ p#overlay{
 video#overlay{
 	position: absolute;
 	width: 100%;
+}
+
+h1#countdown{
+	font-size: 120px;
 }

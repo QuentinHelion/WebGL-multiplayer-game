@@ -18,10 +18,11 @@
 				<source src="media/Cave.mp4" type="video/mp4" />
 			</video>
 			<div id="under-overlay">
+				<h1 id="countdown"></h1>
 				<h1 id="overlay">Welcome to the MushroomCave</h1>
 				<button id="startButton" type="button" hidden>Lancer la partie</button>
 			</div>
-			<p id="startButton">Presented by Khadda Hicham, Siad Racha, Hélion Quentin</p>
+			<p id="overlay">Presented by Khadda Hicham, Siad Racha, Hélion Quentin</p>
 		</div>
 		<script type="module">
 			// ============== IMPORTS ==============
@@ -48,6 +49,7 @@
 			let player2Ball;
 			let mixer, actionAnime;
 			let animeState;
+			let startClockBuffer;
 			let gameState = 0; // 0 => non, 1 => jeu en cours, 2 => fin
 			let i = 0;
 
@@ -707,8 +709,18 @@
 
 				socket.on('startGameApprouved', function(){
 					console.log('start request approuved');
-					startGame();
+					startClockBuffer = parseInt(clock["oldTime"]);
 				});
+
+				if( startClockBuffer ){
+					const countdown = document.getElementById('countdown');
+					const value = parseInt( (4000 - (parseInt(clock["oldTime"]) - startClockBuffer)) / 1000);
+					countdown.innerHTML = value;
+				}
+				if( parseInt(clock["oldTime"]) - startClockBuffer > 3000 && startClockBuffer){
+					startGame();
+					startClockBuffer = undefined;
+				}
 
 			}
 		</script>
