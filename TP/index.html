@@ -73,8 +73,13 @@
 
 			// ============== DEFINITION ==============
 			const actionDico = {
-				walk: "champiWalk.fbx",
-				jump: "champiJump.fbx",
+				walk:  "champiWalk.fbx",
+				jump:  "champiJump.fbx",
+				right: "champiRight.fbx",
+				left:  "champiLeft.fbx",
+				back:  "champiBack.fbx",
+				fall:  "champiFall.fbx",
+				stand: "champiStand.fbx"
 			}
 
 			// ============== TABLEAUX ===============
@@ -226,7 +231,7 @@
 					new THREE.BoxGeometry( 1, 40, 1 ),
 					new THREE.MeshBasicMaterial( { color: 0xFFFFFF, transparent: true, opacity: 0 } )
 				);
-				loaderFBX.load( 'champiAnimate.fbx', function( obj ) {
+				loaderFBX.load( 'champi.fbx', function( obj ) {
 					obj.traverse( function( child ) {
 						if( child.isMesh ){
 							child.castShadow = true;
@@ -453,35 +458,34 @@
 							actionAnime = 'walk';
 						}
 						playerVelocity.add( getForwardVector().multiplyScalar( speedDelta ) );
-					}
-
-					if ( keyStates[ 'KeyS' ] ) {
+					} else if ( keyStates[ 'KeyS' ] ) {
+						if(playerOnFloor){
+							actionAnime = 'back';
+						}
 						playerVelocity.add( getForwardVector().multiplyScalar( - speedDelta ) );
-					}
-
-					if ( keyStates[ 'KeyA' ] ) {
+					} else if ( keyStates[ 'KeyA' ] ) {
+						if(playerOnFloor){
+							actionAnime = 'right';
+						}
 						playerVelocity.add( getSideVector().multiplyScalar( - speedDelta ) );
-					}
-
-					if ( keyStates[ 'KeyD' ] ) {
+					} else if ( keyStates[ 'KeyD' ] ) {
+						if(playerOnFloor){
+							actionAnime = 'left';
+						}
 						playerVelocity.add( getSideVector().multiplyScalar( speedDelta ) );
-					}
-
-					if ( keyStates[ 'KeyK' ] ) {
+					} else if ( keyStates[ 'KeyK' ] ) {
 						console.log(player.position.x);
 						console.log(player.position.z);
-					}
-
-					if ( playerOnFloor ) {
+					} else if ( playerOnFloor ) {
 						if ( keyStates[ 'Space' ] ) {
 							actionAnime = 'jump';
 							playerVelocity.y = 70;
+						} else {
+							actionAnime = 'stand';
 						}
-					}
-					if ( keyStates[ 'KeyQ' ] ) {
+					} else if ( keyStates[ 'KeyQ' ] ) {
 						player.rotation.y += 0.03;
-					}
-					if ( keyStates[ 'KeyE' ] ) {
+					} else if ( keyStates[ 'KeyE' ] ) {
 						player.rotation.y -= 0.03;
 					}
 				}
@@ -604,6 +608,7 @@
 							player2.rotation.y = data.h;
 							if(data.action != actionAnimeBuffer){
 								actionAnimeBuffer = data.action;
+								// console.log( "action: "+data.action );
 								animeChange( data.action );
 							}
 						}
@@ -667,19 +672,14 @@
 
 				const delta = clock.getDelta();
 				if ( mixer ){
-					// for(y = 0; y < mixerArray.length; y++){
-						// mixer = mixerArray[y];
-						mixer.timeScale = 7;
-						mixer.update( delta );
-					// }
+					mixer.timeScale = 20;
+					mixer.update( delta );
 				}
 
 				if(player && obg){
 					animeChest();
 					if(Math.abs(player.position.x - obg.position.x) < 70 && Math.abs(player.position.z - obg.position.z) < 70 ){
 						if(!animeState){
-							// console.log("win");
-							// animeState = 1;
 							socket.emit('playerWin',playerId);
 						}
 					}
@@ -692,6 +692,7 @@
 				socket.on('setId', function(data){
 					playerId = data.id;
 				});
+
 				socket.on('remoteData', function(data){
 					dataArray = data;
 					remoteData();
@@ -700,6 +701,7 @@
 				socket.on('touchPlayerReponse', function(data){
 					if(playerTouchBuffer == undefined && data != playerId){
 						playerTouchBuffer = parseInt(clock["oldTime"]);
+						actionAnime = "fall";
 						console.log('toucher !');
 					}
 				});
@@ -728,7 +730,6 @@
 					startGame();
 					startClockBuffer = undefined;
 				}
-
 			}
 		</script>
 	</body>
