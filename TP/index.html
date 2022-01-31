@@ -72,20 +72,41 @@
 			const vector3 = new THREE.Vector3();
 
 			// ============== DEFINITION ==============
-			const actionDico = {
-				walk:  "champiWalk.fbx",
-				jump:  "champiJump.fbx",
-				right: "champiRight.fbx",
-				left:  "champiLeft.fbx",
-				back:  "champiBack.fbx",
-				fall:  "champiFall.fbx",
-				stand: "champiStand.fbx"
+			// const actionDico = {
+			// 	walk:  "champiWalk.fbx",
+			// 	jump:  "champiJump.fbx",
+			// 	right: "champiRight.fbx",
+			// 	left:  "champiLeft.fbx",
+			// 	back:  "champiBack.fbx",
+			// 	fall:  "champiFall.fbx",
+			// 	stand: "champiStand.fbx"
+			// }
+
+			const actions = [
+				"champiWalk.fbx",
+				"champiJump.fbx",
+				"champiRight.fbx",
+				"champiLeft.fbx",
+				"champiBack.fbx",
+				"champiFall.fbx",
+				"champiStand.fbx",
+			]
+
+			const actionDicoNbr = {
+				walk:  0,
+				jump:  1,
+				right: 2,
+				left:  3,
+				back:  4,
+				fall:  5,
+				stand: 6,
 			}
 
 			// ============== TABLEAUX ===============
 			const keyStates = {};
 			let dataArray = [];
 			let playerArray = new Array();
+			let actionArray = new Array();
 
 			// ============== PARAMETRES ===============
 			const STEPS_PER_FRAME = 5;
@@ -253,6 +274,15 @@
 					h: player.rotation.y,
 					action: actionAnime
 				});
+
+
+				// ======= LOAD ANIMATION =======
+				// const loaderFBX = new FBXLoader().setPath( 'models/' ); // emplacement des fichiers
+				for(let x = 0; x < actions.length; x++){
+					loaderFBX.load(actions[x], function (obj) {
+						actionArray.push(obj.animations[ 0 ]);
+					});
+				}
 
 				buildChest();
 
@@ -549,15 +579,11 @@
 			}
 
 			function animeChange( anime ){
-				anime = actionDico[anime];
-				console.log(anime);
-				const loaderFBX = new FBXLoader();
-				loaderFBX.setPath( 'models/' ); // emplacement des fichiers
-				loaderFBX.load(anime, function (obj) {
-					mixer = new THREE.AnimationMixer( player2 );
-					const action = mixer.clipAction( obj.animations[ 0 ] );
-					action.play();
-				});
+				const nbr = actionDicoNbr[anime];
+				// console.log(nbr+": "+anime);
+				mixer = new THREE.AnimationMixer( player2 );
+				const action = mixer.clipAction( actionArray[nbr] );
+				action.play();
 			}
 
 			// ============== BALLES ==============
