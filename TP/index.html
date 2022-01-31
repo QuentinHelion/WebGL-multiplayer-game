@@ -277,7 +277,6 @@
 
 
 				// ======= LOAD ANIMATION =======
-				// const loaderFBX = new FBXLoader().setPath( 'models/' ); // emplacement des fichiers
 				for(let x = 0; x < actions.length; x++){
 					loaderFBX.load(actions[x], function (obj) {
 						actionArray.push(obj.animations[ 0 ]);
@@ -682,7 +681,7 @@
 
 			function animate() {
 				// ========= LOCAL PART =========
-				if( obc && obg && cave && !gameState ){
+				if( obc && obg && cave && !gameState && actionArray.length === actionDicoNbr.length ){
 					document.getElementById('startButton').hidden = false;
 				}
 
@@ -717,14 +716,18 @@
 
 
 				// ========= MULTIPLAYER PART =========
+
 				socket.on('setId', function(data){
 					playerId = data.id;
 				});
 
 				socket.on('remoteData', function(data){
 					dataArray = data;
-					remoteData();
+					if(gameState){
+						remoteData();
+					}
 				});
+
 
 				socket.on('touchPlayerReponse', function(data){
 					if(playerTouchBuffer == undefined && data != playerId){
