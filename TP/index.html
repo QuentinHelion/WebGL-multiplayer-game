@@ -482,7 +482,7 @@
 						if ( keyStates[ 'Space' ] ) {
 							actionAnime = 'jump';
 							playerVelocity.y = 70;
-						} else {
+						} else if( !keyStates[ 'KeyA' ] && !keyStates[ 'KeyW' ] && !keyStates[ 'KeyS' ] && !keyStates[ 'KeyD' ]){
 							actionAnime = 'stand';
 						}
 					} if ( keyStates[ 'KeyQ' ] ) {
@@ -550,6 +550,7 @@
 
 			function animeChange( anime ){
 				anime = actionDico[anime];
+				console.log(anime);
 				const loaderFBX = new FBXLoader();
 				loaderFBX.setPath( 'models/' ); // emplacement des fichiers
 				loaderFBX.load(anime, function (obj) {
@@ -626,7 +627,7 @@
 						z: object.position.z,
 						h: object.rotation.y,
 						action: actionAnime
-					})
+					});
 			}
 
 			// ============== DEBUT DE PARTIE ==============
