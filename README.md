@@ -1,7 +1,7 @@
 ***Ligne directrice***
 * Personnage première personne avec controle Z/Q/S/D
 * Labyrinthe grotte
-* Trouver le coffre dans le labyrinthe 
+* Trouver le coffre dans le labyrinthe
 * Chronomètre
 
 ***Si possible***
@@ -9,13 +9,13 @@
 
 ***Contenu du projet final :***
 
-* Objet + Matériaux.
-* Lumière res + Ombres.
-* Objet complexes (importés).
-* Personnages animés + ombres.
+* Objet + Matériaux. - OK
+* Lumière res + Ombres. - OK
+* Objet complexes (importés). - OK
+* Personnages animés + ombres. - OK
 * GUI qui contrôle certaines choses.
-* Contrôleur de navigations (orbit, FPS, autres ....).
+* Contrôleur de navigations (orbit, FPS, autres ....). - OK
 * Son (ambiance , spécial).
-* Ecran d’accueil(overlay).
-* Un niveau de collision (if, raycaster, ammo). 
-* Affichage des stats > 25 FPS
+* Ecran d’accueil(overlay). - OK
+* Un niveau de collision (if, raycaster, ammo). - OK
+* Affichage des stats > 25 FPS - OK
