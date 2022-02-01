@@ -8,7 +8,6 @@ let shooter;
 
 app.use(express.static('./'));
 app.get('/',function(req, res) {
-    // console.log(res.sendFile);
     res.sendFile('./index.html');
 });
 
@@ -18,9 +17,6 @@ io.sockets.on('connection', function(socket){
   console.log('connection');
 	socket.userData = { x:0, y:0, z:0, h:0 };//Default values;
   console.log(socket.userData);
-  // if(!playerArray.includes(socket.id) && playerArray.length > 0){
-  //   playerArray.push(socket.id);
-  // }
   socket.emit('userData', {x: socket.userData.x, y: socket.userData.y, z: socket.userData.z });
 
 	console.log(`${socket.id} connected`);
@@ -33,18 +29,10 @@ io.sockets.on('connection', function(socket){
 
 	socket.on('init', function(data){
 		console.log(`socket.init ${data.x}`);
-		// socket.userData.model = data.model;
-		// socket.userData.colour = data.colour;
 		socket.userData.x = data.x;
 		socket.userData.y = data.y;
 		socket.userData.z = data.z;
 		socket.userData.h = data.h;
-    // socket.userData.b = data.b;
-    // socket.userData.bx = data.bx; // balls position x
-    // socket.userData.by = data.by; // balls position y
-    // socket.userData.bz = data.bz; // balls position z
-		// socket.userData.pb = data.pb,
-		// socket.userData.action = "Idle";
 	});
 
 	socket.on('update', function(data){
@@ -52,12 +40,6 @@ io.sockets.on('connection', function(socket){
 		socket.userData.y = data.y;
 		socket.userData.z = data.z;
 		socket.userData.h = data.h;
-    // socket.userData.b = data.b;
-    // socket.userData.bx = data.bx; // balls position x
-    // socket.userData.by = data.by; // balls position y
-    // socket.userData.bz = data.bz; // balls position z
-    // console.log("x: "+data.x);
-		// socket.userData.pb = data.pb,
 		socket.userData.action = data.action;
 	});
 
@@ -79,7 +61,6 @@ io.sockets.on('connection', function(socket){
         io.emit('touchPlayerReponse', data);
       }
     }
-    // console.log(data+" as shoot");
   });
 
   socket.on('playerWin', function(data){
