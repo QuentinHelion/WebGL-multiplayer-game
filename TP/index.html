@@ -436,31 +436,11 @@
 
 				// ========= SETTINGS LIST =========
 				const params = { // liste des parametres
-					Helper: false, // case à cocher => renvoie true OU false
-					Freecam: false,
 					Intensite: pointLight.intensity,
         	Background: scene.background.getHex(), //getHex() => recup la couleur en hexa
-					"Ajouter personnage": function(){ createPerso(); }
 				};
 
 				// ========= SETTINGS ACTIONS =========
-				gui.add( params, 'Helper', true, false ).onChange( function( val ) {
-					spotLightHelper.visible = val; // defini la visibilite des helpers sur true OU false
-					shadowCameraHelper.visible = val;
-				});
-
-				gui.add( params, 'Freecam', true, false ).onChange( function( val ) { // permet de désactiver les limites de la camera
-					if(val){ // si val == true (donc cocher)
-						controls.minDistance = 0;
-						controls.maxDistance = 99999999;
-						controls.maxPolarAngle = 360;
-					} else { // si decocher
-						controls.minDistance = 150;
-						controls.maxDistance = 300;
-						controls.maxPolarAngle = Math.PI / 2.3;
-					}
-				});
-
 				gui.add( params, 'Intensite', 0, 10).onChange( function( val ) {
         	pointLight.intensity = val;
         });
@@ -468,8 +448,6 @@
 				gui.addColor( params, 'Background' ).onChange( function ( val ) {
         	scene.background = new THREE.Color( val );
         });
-
-				gui.add( params, "Ajouter personnage");
 
 				gui.open(); // Ajout du gui à la scene
 			}
