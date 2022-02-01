@@ -53,6 +53,7 @@
 			let gameState = 0; // 0 => non, 1 => jeu en cours, 2 => fin
 			let i = 0;
 			let actionAnimeBuffer;
+			let intensiter = 1;
 
 			// ============== VARIABLE OBJECTS ==============
 			let obc;
@@ -72,16 +73,6 @@
 			const vector3 = new THREE.Vector3();
 
 			// ============== DEFINITION ==============
-			// const actionDico = {
-			// 	walk:  "champiWalk.fbx",
-			// 	jump:  "champiJump.fbx",
-			// 	right: "champiRight.fbx",
-			// 	left:  "champiLeft.fbx",
-			// 	back:  "champiBack.fbx",
-			// 	fall:  "champiFall.fbx",
-			// 	stand: "champiStand.fbx"
-			// }
-
 			const actions = [
 				"champiWalk.fbx",
 				"champiJump.fbx",
@@ -179,12 +170,12 @@
 				scene.add( ambient );
 
 				// ===== LIGHT POINT =====
-				pointLight = new THREE.PointLight(0xffffff, 0.5); // (couleur, intensite)
+				pointLight = new THREE.PointLight(0xD07D22, 0.2); // (couleur, intensite)
 				pointLight.position.set(0, 100, 0); // position (x, z, y)
 				pointLight.castShadow = true; // renvoie des ombres
 
 
-				pointLight2 = new THREE.PointLight(0xffffff, 0.8); // (couleur, intensite)
+				pointLight2 = new THREE.PointLight(0xD07D22, 0.8); // (couleur, intensite)
 				pointLight2.position.set(0, 100, 0); // position (x, z, y)
 				pointLight2.castShadow = true; // renvoie des ombres
 
@@ -462,7 +453,7 @@
 				});
 
 				gui.add( params, 'Intensite', 0, 10).onChange( function( val ) {
-        	pointLight.intensity = val;
+        	intensiter = val;
         });
 
 				gui.addColor( params, 'Background' ).onChange( function ( val ) {
@@ -679,6 +670,14 @@
 				gameState = 2;
 			}
 
+			// ============== LUMIERE ==============
+			function updateLight(deltaTime){
+				// pointLight.color.setHex( 0xD07D22 );
+				pointLight.intensity = 5+deltaTime*150+intensiter;
+				pointLight.penumbra = 6+deltaTime*200;
+				pointLight.distance = 300;
+			}
+
 			function animate() {
 				// ========= LOCAL PART =========
 				if( obc && obg && cave && !gameState && actionArray.length === actions.length ){
@@ -692,7 +691,7 @@
 					control( deltaTime );
 					updatePlayer( deltaTime );
 					updateSocket( player );
-					// updateLight();
+					updateLight( deltaTime );
 					updateSpheres( deltaTime );
 					teleportPlayerIfOob();
 				}
