@@ -10,9 +10,6 @@
 		</head>
 	</head>
 	<body>
-		<!-- <div id="overlay">
-			<button id="startButton" hidden>Play</button>
-		</div> -->
 		<div id="overlay">
 			<video  class="video-fluid z-depth-1" id="overlay" autoplay loop  muted>
 				<source src="media/Cave.mp4" type="video/mp4" />
@@ -24,6 +21,9 @@
 			</div>
 			<p id="overlay">Presented by Khadda Hicham, Siad Racha, Hélion Quentin</p>
 		</div>
+		<!-- <div id="message"> -->
+		<h1 id="message" hidden></h1>
+		<!-- </div> -->
 		<script type="module">
 			// ============== IMPORTS ==============
 			import * as THREE from './build/three.module.js'; // Element threejs
@@ -662,10 +662,13 @@
 			// ============== FIN DE PARTIE ==============
 			function endGame(data){
 				animeState = 1;
+				document.getElementById('displayMessage').hidden = false;
 				if(data === playerId && gameState ){
 					console.log("win");
+					displayMessage("YOU WIN");
 				} else {
 					console.log("lose");
+					displayMessage("YOU LOSE");
 				}
 				gameState = 2;
 			}
@@ -676,6 +679,14 @@
 				pointLight.penumbra = 6+deltaTime*200;
 				pointLight.distance = 300;
 			}
+
+			// ============== DISPLAY MESSAGE ==============
+			function displayMessage(msg){
+				const element = document.getElementById('displayMessage');
+				element.innerHTML = msg;
+			}
+
+			// function
 
 			function animate() {
 				// ========= LOCAL PART =========
@@ -706,6 +717,7 @@
 					if(Math.abs(player.position.x - obg.position.x) < 70 && Math.abs(player.position.z - obg.position.z) < 70 ){
 						if(!animeState){
 							socket.emit('playerWin',playerId);
+
 						}
 					}
 				}
@@ -732,11 +744,17 @@
 						playerTouchBuffer = parseInt(clock["oldTime"]);
 						actionAnime = "fall";
 						console.log('toucher !');
+						document.getElementById('displayMessage').hidden = false;
 					}
 				});
 
 				if(parseInt(clock["oldTime"]) - playerTouchBuffer >= 5000 && playerTouchBuffer){
 					playerTouchBuffer = undefined;
+					document.getElementById('displayMessage').hidden = true;
+				} else if(playerTouchBuffer){
+					const value = parseInt( (6000 - (parseInt(clock["oldTime"]) - playerTouchBuffer)) / 1000);
+					// displayMessage(value);
+					console.log(value);
 				}
 
 				socket.on('end', function(data){
