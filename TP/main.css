@@ -133,3 +133,11 @@ video#overlay{
 h1#countdown{
 	font-size: 120px;
 }
+
+h1#message{
+	position: absolute;
+	width: 100vw;
+	text-align: center;
+	font-size: 80px;
+	padding-top: 50px;
+}

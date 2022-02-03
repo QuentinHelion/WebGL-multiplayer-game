@@ -21,9 +21,7 @@
 			</div>
 			<p id="overlay">Presented by Khadda Hicham, Siad Racha, Hélion Quentin</p>
 		</div>
-		<!-- <div id="message"> -->
 		<h1 id="message" hidden></h1>
-		<!-- </div> -->
 		<script type="module">
 			// ============== IMPORTS ==============
 			import * as THREE from './build/three.module.js'; // Element threejs
@@ -662,7 +660,7 @@
 			// ============== FIN DE PARTIE ==============
 			function endGame(data){
 				animeState = 1;
-				document.getElementById('displayMessage').hidden = false;
+				document.getElementById('message').hidden = false;
 				if(data === playerId && gameState ){
 					console.log("win");
 					displayMessage("YOU WIN");
@@ -682,11 +680,9 @@
 
 			// ============== DISPLAY MESSAGE ==============
 			function displayMessage(msg){
-				const element = document.getElementById('displayMessage');
+				const element = document.getElementById('message');
 				element.innerHTML = msg;
 			}
-
-			// function
 
 			function animate() {
 				// ========= LOCAL PART =========
@@ -744,16 +740,16 @@
 						playerTouchBuffer = parseInt(clock["oldTime"]);
 						actionAnime = "fall";
 						console.log('toucher !');
-						document.getElementById('displayMessage').hidden = false;
+						document.getElementById('message').hidden = false;
 					}
 				});
 
 				if(parseInt(clock["oldTime"]) - playerTouchBuffer >= 5000 && playerTouchBuffer){
 					playerTouchBuffer = undefined;
-					document.getElementById('displayMessage').hidden = true;
+					document.getElementById('message').hidden = true;
 				} else if(playerTouchBuffer){
 					const value = parseInt( (6000 - (parseInt(clock["oldTime"]) - playerTouchBuffer)) / 1000);
-					// displayMessage(value);
+					displayMessage(value);
 					console.log(value);
 				}
 
