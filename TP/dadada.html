@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webaudio - sandbox</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="main.css">
+	<script async src='/cdn-cgi/bm/cv/669835187/api.js'></script></head>
+
+
+  <footer>Presented by Khadda Hicham, Siad Racha, Helion Quentin</footer>
+
+<!-- ===================== CAVERNE =====================-->
+	<audio id="skullbeatzz" preload="auto" style="display: none">
+		<!-- <source src="sounds/376737_Skullbeatz___Bad_Cat_Maste.ogg" type="audio/ogg"> -->
+			<source src="sounds/caverne.mp3" type="audio/mpeg">
+	</audio>
+
+	<audio id="skullbeat" preload="auto" style="display: none">
+		<!-- <source src="sounds/376737_Skullbeatz___Bad_Cat_Maste.ogg" type="audio/ogg"> -->
+			<source src="sounds/caverne.mp3" type="audio/mpeg">
+	</audio>
+
+	<audio id="skull" preload="auto" style="display: none">
+		<!-- <source src="sounds/376737_Skullbeatz___Bad_Cat_Maste.ogg" type="audio/ogg"> -->
+			<source src="sounds/caverne.mp3" type="audio/mpeg">
+	</audio>
+<!-- ===================== CHEST =====================-->
+		<audio id="skullbeatz" preload="auto" style="display: none">
+			<!-- <source src="sounds/376737_Skullbeatz___Bad_Cat_Maste.ogg" type="audio/ogg"> -->
+			<source src="sounds/chest.mp3" type="audio/mpeg">
+		</audio>
+
+<!-- ===================== WATER =====================-->
+
+	<audio id="song" preload="auto" style="display: none" >
+		<!-- <source src="sounds/358232_j_s_song.ogg" type="audio/ogg"> -->
+		<source src="sounds/goute.mp3" type="audio/mpeg" loop >
+	</audio>
+
+	<audio id="songg" preload="auto" style="display: none" >
+		<!-- <source src="sounds/358232_j_s_song.ogg" type="audio/ogg"> -->
+		<source src="sounds/goute.mp3" type="audio/mpeg" loop >
+	</audio>
+
+	<audio id="songgg" preload="auto" style="display: none" >
+		<!-- <source src="sounds/358232_j_s_song.ogg" type="audio/ogg"> -->
+		<source src="sounds/goute.mp3" type="audio/mpeg" loop >
+	</audio>
+
+
+
+
+		<div id="overlay">
+			<button id="startButton">LANCER LA PARTIE</button>
+		</div>
+
+		<div id="info">
+			Welcome to the MushroomCave
+		</div>
+
+
+		<script type="importmap">
+			{
+				"imports": {
+					"three": "../build/three.module.js"
+				}
+			}
+		</script>
+
+		<script type="module">
+
+			import * as THREE from 'three';
+
+			import {MTLLoader} from './jsm/loaders/MTLLoader.js'; // obj .mtl (pour texture)
+
+				import {OBJLoader} from './jsm/loaders/OBJLoader.js'; // ajout d'obj
+
+			import { FirstPersonControls } from './jsm/controls/FirstPersonControls.js';
+
+			let camera, controls, scene, renderer, light;
+
+			let material1, material2, material3, material4, material5,material6,material7;
+
+			let analyser1, analyser2, analyser3, analyser4, analyser5,analyser6,analyser7;
+
+			const clock = new THREE.Clock();
+
+
+
+			const startButton = document.getElementById( 'startButton' );
+			startButton.addEventListener( 'click', init );
+
+
+			function init() {
+
+      scene = new THREE.Scene();
+
+// fonctione tire
+			function shoot(){
+				const listeneree = new THREE.AudioListener();
+				scene.add( listeneree );
+
+				// create a global audio source
+				const soundaa = new THREE.Audio( listeneree );
+
+				// load a sound and set it as the Audio object's buffer
+				const audioLoadere = new THREE.AudioLoader();
+				audioLoadere.load( 'sounds/shoot.mp3', function( buffer ) {
+						soundaa.setBuffer( buffer );
+
+						soundaa.setVolume( 5 );
+						soundaa.play();
+				});
+			}
+
+
+			shoot();
+// fonctione crie
+			function crie(){
+				const listenere = new THREE.AudioListener();
+				scene.add( listenere );
+
+				// create a global audio source
+				const sounda = new THREE.Audio( listenere );
+
+				// load a sound and set it as the Audio object's buffer
+				const audioLoader = new THREE.AudioLoader();
+				audioLoader.load( 'sounds/crie.mp3', function( buffer ) {
+						sounda.setBuffer( buffer );
+
+						sounda.setVolume( 5 );
+						sounda.play();
+				});
+
+			}
+
+			crie();
+
+// color background
+			scene.background = new THREE.Color( 0xFFFFFF );
+
+				const overlay = document.getElementById( 'overlay' );
+				overlay.remove();
+
+				camera = new THREE.PerspectiveCamera( 50, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.set( 0, 25, 0 );
+
+
+
+				const listener = new THREE.AudioListener();
+				camera.add( listener );
+
+
+
+				//taille des sphère
+				const sphere = new THREE.SphereGeometry( 1.9, 20, 20 );//0.2, 20, 20
+
+					//materiel des sphères
+				material1 = new THREE.MeshPhongMaterial( { color: 0xffffff,opacity: 3, transparent: true } );
+				material2 = new THREE.MeshPhongMaterial( { color: 0xffffff,opacity: 3, transparent: true } );
+				material3 = new THREE.MeshPhongMaterial( { color: 0xffffff,opacity: 3, transparent: true } );
+				material4 = new THREE.MeshPhongMaterial( { color: 0xffffff,opacity: 3, transparent: true } );
+				material5 = new THREE.MeshPhongMaterial( { color: 0xffffff,opacity: 3, transparent: true } );
+				material6 = new THREE.MeshPhongMaterial( { color: 0xffffff,opacity: 3, transparent: true } );
+				material7 = new THREE.MeshPhongMaterial( { color: 0xffffff,opacity: 3, transparent: true } );
+
+
+
+
+				// sound spheres
+
+				const mesh1 = new THREE.Mesh( sphere, material1 );
+				mesh1.position.set(  250, 30, 0 );
+				scene.add( mesh1 );
+				//
+				const sound1 = new THREE.PositionalAudio( listener );
+				const songElement = document.getElementById( 'song' );
+				sound1.setMediaElementSource( songElement );
+				sound1.setRefDistance( 20 );
+				sound1.setVolume( 20 );
+				songElement.play();
+				mesh1.add( sound1 );
+
+				//
+
+				const mesh2 = new THREE.Mesh( sphere, material2 );
+				mesh2.position.set( 720, -20, 670 );
+				scene.add( mesh2 );
+
+				const sound2 = new THREE.PositionalAudio( listener );
+				const skullbeatzElement = document.getElementById( 'skullbeatz' );
+				sound2.setMediaElementSource( skullbeatzElement );
+				sound2.setRefDistance( 20 );
+				sound2.setLoop( true );
+				sound2.setVolume( 20 );
+				skullbeatzElement.play();
+				mesh2.add( sound2 );
+
+				//
+//   ===================== CAVERNE =====================
+				const mesh3 = new THREE.Mesh( sphere, material3 );
+				mesh3.position.set( 420, 30, 0 );
+				scene.add( mesh3 );
+
+				const sound3 = new THREE.PositionalAudio( listener );
+				const skullbeatzElements = document.getElementById( 'skullbeatzz' );
+				sound3.setMediaElementSource( skullbeatzElements );
+				sound3.setRefDistance( 20 );
+				sound3.setLoop( true );
+					sound3.setVolume( 20 );
+				skullbeatzElements.play();
+				mesh3.add( sound3 );
+//   ===================== CAVERNE =====================
+				const mesh4 = new THREE.Mesh( sphere, material4 );
+				mesh4.position.set( 520, 30, 0 );
+				scene.add( mesh4 );
+
+				const sound4 = new THREE.PositionalAudio( listener );
+				const skullbeatzElementss = document.getElementById( 'skullbeat' );
+				sound4.setMediaElementSource( skullbeatzElementss );
+				sound4.setRefDistance( 20 );
+				sound4.setLoop( true );
+				sound4.setVolume( 20 );
+				skullbeatzElementss.play();
+				mesh4.add( sound4 );
+//   ===================== CAVERNE =====================
+				const mesh5 = new THREE.Mesh( sphere, material5 );
+				mesh5.position.set( 170, 30, 0 );
+				scene.add( mesh5 );
+
+				const sound5 = new THREE.PositionalAudio( listener );
+				const skullbeatzElementsss = document.getElementById( 'songg' );
+				sound5.setMediaElementSource( skullbeatzElementsss );
+				sound5.setRefDistance( 20 );
+				sound5.setLoop( true );
+				sound5.setVolume( 20 );
+				skullbeatzElementsss.play();
+				mesh5.add( sound5 );
+//   ===================== WATERS  =====================
+
+					const mesh6 = new THREE.Mesh( sphere, material6 );
+					mesh6.position.set( 90, 60, 0 );
+					scene.add( mesh6 );
+
+					const sound6 = new THREE.PositionalAudio( listener );
+					const skullbeatzElementssss = document.getElementById( 'songgg' );
+					sound6.setMediaElementSource( skullbeatzElementssss );
+					sound6.setRefDistance( 20 );
+					sound6.setLoop( true );
+					sound6.setVolume( 20 );
+					skullbeatzElementssss.play();
+					mesh6.add( sound6 );
+
+//   ===================== WATERS  =====================
+					const mesh7 = new THREE.Mesh( sphere, material7 );
+					mesh7.position.set( 620, 90, 0 );
+					scene.add( mesh7 );
+
+					const sound7 = new THREE.PositionalAudio( listener );
+					const skullbeatzElementsssss = document.getElementById( 'skull' );
+					sound7.setMediaElementSource( skullbeatzElementsssss );
+					sound7.setRefDistance( 20 );
+					sound7.setLoop( true );
+					sound7.setVolume( 20 );
+					skullbeatzElementsssss.play();
+					mesh7.add( sound7 );
+
+
+// analyser
+				analyser1 = new THREE.AudioAnalyser( sound1, 32 );
+				analyser2 = new THREE.AudioAnalyser( sound2, 32 );
+				analyser3 = new THREE.AudioAnalyser( sound3, 32 );
+				analyser4 = new THREE.AudioAnalyser( sound4, 32 );
+				analyser5 = new THREE.AudioAnalyser( sound5, 32 );
+				analyser6 = new THREE.AudioAnalyser( sound5, 32 );
+				analyser7 = new THREE.AudioAnalyser( sound5, 32 );
+
+
+
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+
+				//
+
+				controls = new FirstPersonControls( camera, renderer.domElement );
+
+				controls.movementSpeed = 100;
+				controls.lookSpeed = 0.05;
+				controls.noFly = true;
+				controls.lookVertical = false;
+
+
+
+				window.addEventListener( 'resize', onWindowResize );
+
+				animate();
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				controls.handleResize();
+
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+				render();
+
+			}
+
+
+			function render() {
+
+				const delta = clock.getDelta();
+
+				controls.update( delta );
+
+
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+	<script type="text/javascript">(function(){window['__CF$cv$params']={r:'6d843e698f1b3a0b',m:'bbbKKMV2BoOSQy53SS9z8U_ijPZwVrZpsQjZgrDQrYg-1643981323-0-ASXgtoklTUrjXmciiy40UL7F7zC2L8b5r4JC2T0WwWVjg+0XdtGaL9WS5rUzbcjWLHhO863x5IUQ3xmrFq5PCErgak2/sZCsnU7ZJzYMoH/l+ybv6wpWXlLVqH/uEmkYbKkOclWucpNhzu5k2DbkuYz/mHHPxqJbTr3oIora9NXwU3EN5uu4JiqL9SheEIkXrA==',s:[0x07f961c8fd,0xbff49fb3ca],}})();</script></body>
+</html>
