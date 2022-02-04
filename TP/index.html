@@ -52,6 +52,8 @@
 			let i = 0;
 			let actionAnimeBuffer;
 			let intensiter = 1;
+			let listener,soundaa,audioLoad;
+			let soundVolume = 5;
 
 			// ============== VARIABLE OBJECTS ==============
 			let obc;
@@ -271,6 +273,13 @@
 						actionArray.push(obj.animations[ 0 ]);
 					});
 				}
+
+				// ======= AUDIO =======
+				listener = new THREE.AudioListener();
+				scene.add(listener);
+				soundaa = new THREE.Audio( listener );
+				audioLoad = new THREE.AudioLoader().setPath('./media');
+
 
 				buildChest();
 
@@ -575,7 +584,7 @@
 			}
 
 			// ============== BALLES ==============
-			function throwBall() {
+			function throwBall() { // tire
 				const sphere = spheres[ 0 ];
 				player.getWorldDirection( playerDirection );
 				sphere.collider.center.copy( playerCollider.end ).addScaledVector( playerDirection, playerCollider.radius * 1.5 );
@@ -583,6 +592,11 @@
 				sphere.velocity.copy( playerDirection ).multiplyScalar( impulse );
 				sphere.velocity.addScaledVector( playerVelocity, 2 );
 				console.log('shot');
+				audioLoad.load('shoot.mp3', function(data){
+					soundaa.setBuffer( data );
+					soundaa.setVolume( soundVolume );
+					soundaa.play();
+				}
 				socket.emit('ballShoot', {data: spheres[0].velocity, id: playerId});
 			}
 
