@@ -26,7 +26,7 @@
 		<!-- ============== AUDIOS ============== -->
 		<audio id="chest" preload="auto" autoplay hidden loop>
 			<source src="media/chest.mp3" type="audio/mpeg">
-			</audio>
+		</audio>
 		<audio id="goute" preload="auto" autoplay hidden loop>
 			<source src="media/goute.mp3" type="audio/mpeg">
 		</audio>
@@ -106,7 +106,7 @@
 				"champiBack.fbx",
 				"champiFall.fbx",
 				"champiStand.fbx",
-			]
+			];
 
 			const actionDicoNbr = {
 				walk:  0,
@@ -116,13 +116,14 @@
 				back:  4,
 				fall:  5,
 				stand: 6,
-			}
+			};
 
 			// ============== TABLEAUX ===============
 			const keyStates = {};
 			let dataArray = [];
 			let playerArray = new Array();
 			let actionArray = new Array();
+			let audioArray = new Array();
 
 			// ============== PARAMETRES ===============
 			const STEPS_PER_FRAME = 5;
@@ -327,6 +328,7 @@
 				posAudio.setRefDistance( .1 );
 				posAudio.setVolume( soundVolume );
 				songElement.play();
+				audioArray.push( posAudio );
 				mesh.add(posAudio);
 				scene.add(mesh);
 			}
@@ -498,7 +500,8 @@
         });
 
 				gui.add( params, 'Volume', 0, 100).onChange( function( val ) {
-        	soundVolume = val;
+        	// soundVolume = val;
+					listener.setMasterVolume( val );
         });
 
 				gui.open(); // Ajout du gui à la scene
@@ -626,7 +629,7 @@
 				console.log('shot');
 				audioLoad.load('shoot.mp3', function(data){
 					soundaa.setBuffer( data );
-					soundaa.setVolume( soundVolume );
+					soundaa.setVolume( soundVolume - 10 );
 					soundaa.play();
 				});
 				socket.emit('ballShoot', {data: spheres[0].velocity, id: playerId});
