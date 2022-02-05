@@ -22,6 +22,19 @@
 			<p id="overlay">Presented by Khadda Hicham, Siad Racha, Hélion Quentin</p>
 		</div>
 		<h1 id="message" hidden></h1>
+
+		<!-- ============== AUDIOS ============== -->
+		<audio id="goute" preload="auto" autoplay hidden loop>
+			<source src="media/goute.mp3" type="audio/mpeg">
+		</audio>
+		<audio id="chest" preload="auto" autoplay hidden loop>
+			<source src="media/chest.mp3" type="audio/mpeg">
+		</audio>
+		<audio id="caverne" preload="auto" autoplay hidden loop>
+			<source src="media/caverne.mp3" type="audio/mpeg">
+		</audio>
+
+
 		<script type="module">
 			// ============== IMPORTS ==============
 			import * as THREE from './build/three.module.js'; // Element threejs
@@ -197,7 +210,7 @@
 					obj.scene.rotation.z = 6.28;
 					obj.scene.scale.multiplyScalar(-1);
 					scene.add( obj.scene );
-					worldOctree.fromGraphNode( obj.scene );
+					// worldOctree.fromGraphNode( obj.scene );
 					cave = obj.scene;
 				});
 
@@ -207,8 +220,8 @@
 				);
 				sol.receiveShadow = true;
 				sol.position.set(3500, -50, 3500);
-				// scene.add( sol );
-				// worldOctree.fromGraphNode( sol );
+				scene.add( sol );
+				worldOctree.fromGraphNode( sol );
 
 				camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 10000 );
 				camera.rotation.order = 'YXZ';
@@ -278,7 +291,7 @@
 				listener = new THREE.AudioListener();
 				scene.add(listener);
 				soundaa = new THREE.Audio( listener );
-				audioLoad = new THREE.AudioLoader().setPath('./media');
+				audioLoad = new THREE.AudioLoader().setPath('./media/');
 
 
 				buildChest();
@@ -288,6 +301,30 @@
 			}
 
 			// ================= FONCTIONS UTILES =================
+			// ============== SPATIAL SOUND ==============
+			function buildSound(sound, posX, posZ){
+				const posY = -10;
+				const mesh = new THREE.Mesh(
+					new THREE.SphereGeometry( 1.9, 20, 20 ),
+					new THREE.MeshPhongMaterial( { color: 0xffffff,opacity: 1, transparent: true } )
+				);
+				mesh.position.set(posX, posY, posZ);
+				const posAudio = new THREE.PositionalAudio( listener );
+				const songElement = document.getElementById( sound );
+				posAudio.setMediaElementSource( songElement );
+				posAudio.setVolume( soundVolume );
+				songElement.play();
+				mesh.add(posAudio);
+				scene.add(mesh);
+			}
+
+			// ============== LOAD SOUND ==============
+			function loadSound(){
+				buildSound("goute",0,0);
+				buildSound("chest",0,0);
+				buildSound("caverne",0,0);
+			}
+
 			// ============== CHEST ==============
 			function buildChest(){
 
@@ -596,7 +633,7 @@
 					soundaa.setBuffer( data );
 					soundaa.setVolume( soundVolume );
 					soundaa.play();
-				}
+				});
 				socket.emit('ballShoot', {data: spheres[0].velocity, id: playerId});
 			}
 
@@ -668,6 +705,7 @@
 					gameState = 1;
 					const overlay = document.getElementById( 'overlay' );
 					overlay.remove();
+					loadSound();
 				}
 			}
 
@@ -755,6 +793,11 @@
 						actionAnime = "fall";
 						console.log('toucher !');
 						document.getElementById('message').hidden = false;
+						audioLoad.load('crie.mp3', function(data){
+							soundaa.setBuffer( data );
+							soundaa.setVolume( soundVolume );
+							soundaa.play();
+						});
 					}
 				});
 
