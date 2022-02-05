@@ -24,13 +24,25 @@
 		<h1 id="message" hidden></h1>
 
 		<!-- ============== AUDIOS ============== -->
+		<audio id="chest" preload="auto" autoplay hidden loop>
+			<source src="media/chest.mp3" type="audio/mpeg">
+			</audio>
 		<audio id="goute" preload="auto" autoplay hidden loop>
 			<source src="media/goute.mp3" type="audio/mpeg">
 		</audio>
-		<audio id="chest" preload="auto" autoplay hidden loop>
-			<source src="media/chest.mp3" type="audio/mpeg">
+		<audio id="goute2" preload="auto" autoplay hidden loop>
+			<source src="media/goute.mp3" type="audio/mpeg">
+		</audio>
+		<audio id="goute3" preload="auto" autoplay hidden loop>
+			<source src="media/goute.mp3" type="audio/mpeg">
 		</audio>
 		<audio id="caverne" preload="auto" autoplay hidden loop>
+			<source src="media/caverne.mp3" type="audio/mpeg">
+		</audio>
+		<audio id="caverne2" preload="auto" autoplay hidden loop>
+			<source src="media/caverne.mp3" type="audio/mpeg">
+		</audio>
+		<audio id="caverne3" preload="auto" autoplay hidden loop>
 			<source src="media/caverne.mp3" type="audio/mpeg">
 		</audio>
 
@@ -312,6 +324,7 @@
 				const posAudio = new THREE.PositionalAudio( listener );
 				const songElement = document.getElementById( sound );
 				posAudio.setMediaElementSource( songElement );
+				posAudio.setRefDistance( .3 );
 				posAudio.setVolume( soundVolume );
 				songElement.play();
 				mesh.add(posAudio);
@@ -320,9 +333,13 @@
 
 			// ============== LOAD SOUND ==============
 			function loadSound(){
-				buildSound("goute",0,0);
-				buildSound("chest",0,0);
+				buildSound("chest",-2300,-2065);
 				buildSound("caverne",0,0);
+				buildSound("caverne2",-736,-2200);
+				buildSound("caverne3",-2280,-931);
+				buildSound("goute",-40,-1470);
+				buildSound("goute2",-1540,-430);
+				buildSound("goute3",-1272,-1180);
 			}
 
 			// ============== CHEST ==============
@@ -539,8 +556,8 @@
 						playerVelocity.add( getSideVector().multiplyScalar( speedDelta ) );
 					}
 					if ( keyStates[ 'KeyK' ] ) {
-						console.log(player.position.x);
-						console.log(player.position.z);
+						console.log("x: "+player.position.x);
+						console.log("z: "+player.position.z);
 					}
 					if ( playerOnFloor ) {
 						if ( keyStates[ 'Space' ] ) {
