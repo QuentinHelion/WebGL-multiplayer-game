@@ -78,7 +78,7 @@
 			let actionAnimeBuffer;
 			let intensiter = 1;
 			let listener,soundaa,audioLoad;
-			let soundVolume = 5;
+			let soundVolume = 10;
 
 			// ============== VARIABLE OBJECTS ==============
 			let obc;
@@ -331,7 +331,7 @@
 				const posAudio = new THREE.PositionalAudio( listener );
 				const songElement = document.getElementById( sound );
 				posAudio.setMediaElementSource( songElement );
-				posAudio.setRefDistance( .1 );
+				posAudio.setRefDistance( .7 );
 				posAudio.setVolume( soundVolume );
 				songElement.play();
 				audioArray.push( posAudio );
