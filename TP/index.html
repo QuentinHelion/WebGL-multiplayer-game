@@ -129,7 +129,7 @@
 			const STEPS_PER_FRAME = 5;
 			const GRAVITY = 30;
 			const NUM_SPHERES = 1;
-			const SPHERE_RADIUS = 4;
+			const SPHERE_RADIUS = 2;
 
 			// =============== EVENT LISTENER ===============
 			document.addEventListener( 'keydown', ( event ) => {
@@ -175,7 +175,7 @@
 
 				// ============= SCENE =============
 				scene = new THREE.Scene();
-				scene.background = new THREE.Color( 0x6e7bbb );
+				scene.background = new THREE.Color( 0x000000 );
 
 				// ============= AFFICHAGE STATS =============
 				stats = new Stats(); // création stats
@@ -222,6 +222,12 @@
 					obj.scene.position.y = -30;
 					obj.scene.rotation.z = 6.28;
 					obj.scene.scale.multiplyScalar(-1);
+					// obj.scene.traverse( function( child ) {
+					// 	if( child.isMesh ){
+					// 		// child.castShadow = true;
+					// 		child.receiveShadow = true;
+					// 	}
+					// });
 					scene.add( obj.scene );
 					worldOctree.fromGraphNode( obj.scene );
 					cave = obj.scene;
@@ -623,7 +629,7 @@
 				const sphere = spheres[ 0 ];
 				player.getWorldDirection( playerDirection );
 				sphere.collider.center.copy( playerCollider.end ).addScaledVector( playerDirection, playerCollider.radius * 1.5 );
-				const impulse = 650 + 30;
+				const impulse = 900;
 				sphere.velocity.copy( playerDirection ).multiplyScalar( impulse );
 				sphere.velocity.addScaledVector( playerVelocity, 2 );
 				console.log('shot');
