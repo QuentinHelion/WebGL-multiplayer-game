@@ -324,7 +324,7 @@
 				const posAudio = new THREE.PositionalAudio( listener );
 				const songElement = document.getElementById( sound );
 				posAudio.setMediaElementSource( songElement );
-				posAudio.setRefDistance( .3 );
+				posAudio.setRefDistance( .1 );
 				posAudio.setVolume( soundVolume );
 				songElement.play();
 				mesh.add(posAudio);
