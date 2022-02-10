@@ -606,18 +606,17 @@
 				player.position.copy( playerCollider.end );
 			}
 
-			function teleportPlayerIfOob(){ // A VERIF UTILITER
+			function teleportPlayerIfOob(){
 				if (player.position.y <= -150){ // si en dessous de la map
 					playerCollider.start.set( 0, -24.5, 0 );
 					playerCollider.end.set( 0, -25, 0 );
-					playerCollider.radius =  1.35;
 					player.position.copy( playerCollider.end ); // on le remet au début du labyrinthe
 				}
 			}
 
 			function animeChange( anime ){ // changement d'animation
 				const nbr = actionDicoNbr[anime]; // recup le numéro de la case en fonction de l'action
-				mixer = new THREE.AnimationMixer( player2 ); // UTILE ?
+				mixer = new THREE.AnimationMixer( player2 );
 				const action = mixer.clipAction( actionArray[nbr] ); // joue l'animation choisit
 				action.play(); // joue l'animation
 			}
@@ -633,19 +632,17 @@
 				console.log('shot');
 				audioLoad.load('shoot.mp3', function(data){ // on joue le son de tire
 					soundaa.setBuffer( data );
-					soundaa.setVolume( soundVolume - 10 );
+					soundaa.setVolume( soundVolume - 5 );
 					soundaa.play();
 				});
 				socket.emit('ballShoot', {data: spheres[0].velocity, id: playerId}); // envoie au serveur l'info
 			}
 
 			function spheresCollisions() { // A OPTIMISER
-				for ( let i = 0, length = spheres.length; i < length; i ++ ) {
-					const s1 = spheres[ i ];
-					const d3 = s1.collider.center.distanceToSquared( player2.position ); // compare la position du centre de la sphere par rapport au jour 2
-					if(d3 < 90){
-						socket.emit('touchPlayer', playerId); // si toucher on envoie l'info au serveur
-					}
+				const s1 = spheres[ 0 ];
+				const d3 = s1.collider.center.distanceToSquared( player2.position ); // compare la position du centre de la sphere par rapport au jour 2
+				if(d3 < 90){
+					socket.emit('touchPlayer', playerId); // si toucher on envoie l'info au serveur
 				}
 			}
 
@@ -656,7 +653,7 @@
 					if( result ) { // si toucher
 						sphere.velocity.addScaledVector( result.normal, - result.normal.dot( sphere.velocity ) * 1.5 ); // ralenti la balle
 						sphere.collider.center.add( result.normal.multiplyScalar( result.depth ) );
-					} else { // sinon tombe avec le temps UTILE ?
+					} else {
 						sphere.velocity.y -= GRAVITY * deltaTime;
 					}
 				} );
