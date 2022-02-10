@@ -327,7 +327,7 @@
 				const posY = -10;
 				const mesh = new THREE.Mesh( // creation sphere
 					new THREE.SphereGeometry( 1.9, 20, 20 ),
-					new THREE.MeshPhongMaterial( { color: 0xffffff,opacity: 1, transparent: true } )
+					new THREE.MeshPhongMaterial( { color: 0xffffff,opacity: 0, transparent: true } )
 				);
 				mesh.position.set(posX, posY, posZ); // position
 				const posAudio = new THREE.PositionalAudio( listener ); // audio spatial
@@ -653,7 +653,7 @@
 					if( result ) { // si toucher
 						sphere.velocity.addScaledVector( result.normal, - result.normal.dot( sphere.velocity ) * 1.5 ); // ralenti la balle
 						sphere.collider.center.add( result.normal.multiplyScalar( result.depth ) );
-					} else {
+					} else { // sinon on baise au fur et a mesure sa vitesse
 						sphere.velocity.y -= GRAVITY * deltaTime;
 					}
 				} );
@@ -788,11 +788,11 @@
 					if(playerTouchBuffer == undefined && data != playerId){ // si le joueur n'est pas déjà toucher et que ce n'est pas le tireur
 						playerTouchBuffer = parseInt(clock["oldTime"]); // on lance le chrono
 						actionAnime = "fall"; // changement de l'animation
-						// console.log('toucher !');
+						console.log('toucher !');
 						document.getElementById('message').hidden = false; // affichage du module de message
-						audioLoad.load('crie.mp3', function(data){ // joue le son spécifique
+						audioLoad.load('crie.mp3', function(data){ // on joue le son de tire
 							soundaa.setBuffer( data );
-							soundaa.setVolume( soundVolume );
+							soundaa.setVolume( soundVolume - 5 );
 							soundaa.play();
 						});
 					}
@@ -804,7 +804,6 @@
 				} else if(playerTouchBuffer){ // sinon si bien toucher
 					const value = parseInt( (6000 - (parseInt(clock["oldTime"]) - playerTouchBuffer)) / 1000); // met la valeur sous forme de compte a rebour
 					displayMessage(value); // affichage de temps restant
-					// console.log(value);
 				}
 
 				socket.on('end', function(data){
